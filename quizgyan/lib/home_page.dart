@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quizgyan/components/did_you_know.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -9,8 +10,10 @@ class HomePage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Quiz Gyan'),
       ),
-      body:Center(
-        child: Text('Welcome to Quiz Gyan!'),
+      body:Column(
+        children: [
+          DidYouKnow(),
+        ],
       )
     );
     
