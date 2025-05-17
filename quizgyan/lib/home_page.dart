@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quizgyan/components/did_you_know.dart';
+import 'package:quizgyan/components/quiz_section.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -13,6 +14,7 @@ class HomePage extends StatelessWidget {
       body:Column(
         children: [
           DidYouKnow(),
+          QuizSection()
         ],
       )
     );
