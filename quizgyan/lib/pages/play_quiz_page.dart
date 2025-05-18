@@ -11,6 +11,8 @@ class PlayQuizPage extends StatefulWidget {
 
 class _PlayQuizPageState extends State<PlayQuizPage> {
   bool playmode = false;
+  bool optionClicked = false;
+  int? selectedOption;
 
   int currentLevel = 1;
   int currentQuestion = 0;
@@ -109,18 +111,32 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: allLevels[currentLevel - 1].questions[currentQuestion].options.length,
                   itemBuilder: (context, index) {
+                    var current = allLevels[currentLevel - 1].questions[currentQuestion];
                     return ListTile(
                       title: TextButton(
-                      onPressed: (){},
+                      onPressed: (){
+                        setState(() {
+                          optionClicked= true;
+                          selectedOption = index;
+                          
+                        });
+                      },
                       child: Container(
                         width: MediaQuery.of(context).size.width,
                         padding: const EdgeInsets.all(10.0),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(10.0),
-                          color: const Color.fromARGB(255, 218, 235, 248)
+                          color: optionClicked && (selectedOption == index || current.options[index] == current.answer )?( current.options[index] == current.answer? const Color.fromARGB(255, 179, 240, 181) : const Color.fromARGB(255, 238, 156, 150)) : const Color.fromARGB(255, 196, 220, 240),
                           
                         ),
-                        child: Text(allLevels[currentLevel - 1].questions[currentQuestion].options[index],textAlign: TextAlign.center,style: TextStyle(color: Colors.black, fontSize: 20),)),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(current.options[index],style: TextStyle(color: Colors.black, fontSize: 20),),
+                            optionClicked && (selectedOption == index || current.options[index] == current.answer )? (current.options[index] == current.answer? const Icon(Icons.check, color: Colors.green,) : const Icon(Icons.close, color: Colors.red,)) : const Icon(Icons.check, color: Colors.transparent,),
+
+                          ],
+                        )),
                     ),
                       
                     );
@@ -131,9 +147,65 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
             ),
           ),
             
+            //mnext button
+            const SizedBox(height: 20.0),
+           optionClicked ?  TextButton(
+              onPressed: (){
+                setState(() {
+                  if(currentQuestion < allLevels[currentLevel - 1].questions.length - 1){
+                    currentQuestion++;
+                    optionClicked = false;
+                    selectedOption = null;
+                  }else{
+                    //show score
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text("Quiz Completed"),
+                          content: Text("Your score is $currentScore"),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text("OK"),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                });
+              },
+              child: Container(
+              padding: const EdgeInsets.all(10.0),
+              width: 60,
+              height: 60,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(30.0),
+                color: Colors.blue,
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.grey,
+                    blurRadius: 5.0,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  const Icon(Icons.arrow_forward, color: Colors.white, size: 30.0,),
+                ],
+              ),
+            )):SizedBox()
           
         ],
       ),
+
       
     );
   }
