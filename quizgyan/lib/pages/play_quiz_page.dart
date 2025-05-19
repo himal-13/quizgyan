@@ -13,6 +13,7 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
   bool playmode = false;
   bool optionClicked = false;
   int? selectedOption;
+  bool scoreAdded = false;
 
   int currentLevel = 1;
   int currentQuestion = 0;
@@ -29,36 +30,49 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // body: Container(
-      //   padding: const EdgeInsets.all(20.0),
-      //   child: Column(
-      //     children: [
+      body: !playmode? Container(
+        padding: const EdgeInsets.all(20.0),
+        margin: const EdgeInsets.only(top: 10.0),
+        child: Column(
+          children: [
           
-      //       Row(
-      //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      //         children: [
-      //           LevelButton(level: '1'),
-      //           LevelButton(level: '2'),
-      //           LevelButton(level: '3'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                LevelButton(level: '1',onTap: () {
+                  getLevel(1);
+                },),
+                LevelButton(level: '2', onTap: (){
+                  getLevel(2);
+                },),
+                LevelButton(level: '3', onTap: () {
+                  getLevel(3);
+                },),
         
         
-      //         ],
-      //       ),
-      //       const SizedBox(height: 20.0),
-      //       Row(
-      //         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      //         children: [
-      //           LevelButton(level: '1'),
-      //           LevelButton(level: '2'),
-      //           LevelButton(level: '3'),
+              ],
+            ),
+            const SizedBox(height: 40.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                LevelButton(level: '4', onTap: () {
+                  getLevel(4);
+                },),
+                LevelButton(level: '5', onTap: () {
+                  getLevel(5);
+                },),
+                LevelButton(level: '6', onTap: () {
+                  getLevel(6);
+                },),
         
-      //         ],
-      //       )
-      //     ],
+              ],
+            )
+          ],
         
-      //   ),
-      // ),
-      body: Column(
+        ),
+      ):
+       Column(
         children: [
           Container(
             padding: const EdgeInsets.all(10.0),
@@ -118,6 +132,10 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
                         setState(() {
                           optionClicked= true;
                           selectedOption = index;
+                          if(current.options[index] == current.answer && !scoreAdded){
+                            currentScore++;
+                            scoreAdded= true;
+                          }
                           
                         });
                       },
@@ -147,7 +165,7 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
             ),
           ),
             
-            //mnext button
+            //next button
             const SizedBox(height: 20.0),
            optionClicked ?  TextButton(
               onPressed: (){
@@ -163,15 +181,31 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
                       builder: (context) {
                         return AlertDialog(
                           title: const Text("Quiz Completed"),
-                          content: Text("Your score is $currentScore"),
+                          content: Column(
+                            children: [
+                              Text("Score : $currentScore", textAlign: TextAlign.center, ),
+                              const SizedBox(height: 10.0),
+                            ],
+                          ),
                           actions: [
                             TextButton(
                               onPressed: () {
+                                setState(() {
+                                  currentLevel = 1;
+                                  currentQuestion = 0;
+                                  currentScore = 0;
+                                  playmode = false;
+                                  optionClicked = false;
+                                  selectedOption = null;
+                                  scoreAdded = false;
+                                });
                                 Navigator.of(context).pop();
                               },
                               child: const Text("OK"),
                             ),
                           ],
+
+                         
                         );
                       },
                     );
