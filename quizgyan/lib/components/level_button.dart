@@ -1,19 +1,14 @@
 import 'package:flutter/material.dart';
 
-class LevelButton extends StatefulWidget {
+class LevelButton extends StatelessWidget {
   final String level;
-  void Function()? onTap;
-  LevelButton({super.key,required this.level, this.onTap});
+  final void Function()? onTap;
+  const LevelButton({super.key,required this.level, this.onTap});
 
-  @override
-  State<LevelButton> createState() => _LevelButtonState();
-}
-
-class _LevelButtonState extends State<LevelButton> {
   @override
   Widget build(BuildContext context) {
     return TextButton(
-      onPressed: widget.onTap,
+      onPressed: onTap,
       child: Container(
         padding: const EdgeInsets.all(10),
         width: 100,
@@ -27,7 +22,7 @@ class _LevelButtonState extends State<LevelButton> {
           )
       
         ),
-        child: Center(child: Text(widget.level)),
+        child: Center(child: Text(level)),
         
       ),
     );
