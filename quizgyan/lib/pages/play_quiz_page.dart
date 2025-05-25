@@ -34,7 +34,16 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
         padding: const EdgeInsets.all(20.0),
         margin: const EdgeInsets.only(top: 10.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            Text(
+              "Select Level",
+              style: TextStyle(
+                fontSize: 30.0,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 20.0),
           
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -45,9 +54,7 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
                 LevelButton(level: '2', onTap: (){
                   getLevel(2);
                 },),
-                LevelButton(level: '3', onTap: () {
-                  getLevel(3);
-                },),
+
         
         
               ],
@@ -56,18 +63,44 @@ class _PlayQuizPageState extends State<PlayQuizPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                LevelButton(level: '3', onTap: () {
+                  getLevel(3);
+                },),
                 LevelButton(level: '4', onTap: () {
                   getLevel(4);
                 },),
+  
+        
+              ],
+            ),
+            const SizedBox(height: 40.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
                 LevelButton(level: '5', onTap: () {
                   getLevel(5);
                 },),
                 LevelButton(level: '6', onTap: () {
                   getLevel(6);
                 },),
+  
         
               ],
-            )
+            ),
+            const SizedBox(height: 40.0),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                LevelButton(level: '7', onTap: () {
+                  getLevel(7);
+                },),
+                LevelButton(level: '8', onTap: () {
+                  getLevel(8);
+                },),
+  
+        
+              ],
+            ),
           ],
         
         ),

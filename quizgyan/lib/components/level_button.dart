@@ -14,7 +14,7 @@ class LevelButton extends StatelessWidget {
         width: 100,
         height: 100,
         decoration: BoxDecoration(
-          color: Colors.grey,
+          color: Colors.grey[200],
           borderRadius: BorderRadius.circular(50),
           border: Border.all(
             color: Colors.black,
@@ -22,7 +22,7 @@ class LevelButton extends StatelessWidget {
           )
       
         ),
-        child: Center(child: Text(level)),
+        child: Center(child: Text(level, style: TextStyle(fontSize: 25),)),
         
       ),
     );
