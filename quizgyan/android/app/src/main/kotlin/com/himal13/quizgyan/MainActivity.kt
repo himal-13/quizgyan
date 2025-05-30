@@ -1,4 +1,4 @@
-package com.example.quizgyan
+package com.himal13.quizgyan
 
 import io.flutter.embedding.android.FlutterActivity
 
