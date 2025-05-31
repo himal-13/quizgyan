@@ -74,10 +74,10 @@ class _LevelPageState extends State<LevelPage> {
             // Top row: back button + question count
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
+              children: [
                 Icon(Icons.arrow_back, color: Colors.white),
                 Text(
-                  '1 / 10',
+                  '${currentQuestionIndex+1} / 10',
                   style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
               ],

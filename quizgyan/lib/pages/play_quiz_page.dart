@@ -71,6 +71,17 @@ class SelectLevelPage extends StatelessWidget {
                 ],
               ),
             ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                const Icon(
+                  Icons.forward,
+                  color: Colors.white,
+                  size: 35,
+                ),
+              ],
+            ),
           ],
         ),
       ),
