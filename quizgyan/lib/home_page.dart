@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quizgyan/pages/multiplayer_page.dart';
 import 'package:quizgyan/pages/play_quiz_page.dart';
 
 class HomePage extends StatelessWidget {
@@ -92,20 +93,30 @@ class HomePage extends StatelessWidget {
             const SizedBox(height: 30),
 
             // Score Container
-            Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-              decoration: BoxDecoration(
-                color: const Color(0xFF6900D1),
-                borderRadius: BorderRadius.circular(30),
-              ),
-              child: const Text(
-                'Mutliplayer',
-                style: TextStyle(
-                  fontSize: 22,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
+            TextButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MultiplayerPage(),
+                  ),
+                );
+              },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6900D1),
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: const Text(
+                  'Mutliplayer',
+                  style: TextStyle(
+                    fontSize: 22,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.2,
+                  ),
                 ),
               ),
             ),
