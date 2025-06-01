@@ -1,5 +1,10 @@
-import 'package:flutter/material.dart';
+import 'dart:math';
 
+import 'package:flutter/material.dart';
+import 'package:quizgyan/constants/quiz_contant.dart';
+
+
+List<Map<String, dynamic>>  selectedQuestions = List.from(questions)..shuffle();
 
 
 class MultiplayerPlayPage extends StatelessWidget {
@@ -25,84 +30,83 @@ class _QuizScreenState extends State<QuizScreen> {
   int player1Score = 0;
   int player2Score = 0;
   int currentQuestionIndex = 0; 
+  bool chooseQuestionMode = true; 
+  List <int> remainingQuestionIndex = List.generate(20, (index) => index);  
+
+
+  @override
+  void initState() {
+   selectedQuestions = selectedQuestions.take(20).toList();
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFBF5E5), // Light beige background
+      backgroundColor: const Color(0xFFFBF5E5),  
       body: SafeArea(
         child: Column(
           children: [
-            // Top Scoreboard (Player 1) - Rotated to be opposite
+             
             RotatedBox(
-              quarterTurns: 2, // Rotates the content by 180 degrees
+              quarterTurns: 2,  
               child: _buildScoreboard( 
                 leftSegmentText: 'PLAYER 1',
                 rightSegmentText: '0',
-                leftSegmentColor: const Color.fromARGB(255, 40, 85, 167), // Green for Player 1
-                rightSegmentColor: const Color(0xFF6F42C1), // Purple for Player 1's score
+                leftSegmentColor: const Color.fromARGB(255, 40, 85, 167),  
+                rightSegmentColor: const Color(0xFF6F42C1),  
               ),
             ),
-            // Middle section containing Player 1's question, a divider, and Player 2's question
+             
             Expanded(
               child: Column(
                 children: [
-                  // Player 1's Question and Options (rotated)
                   Expanded(
                     child: RotatedBox(
-                      quarterTurns: 2, // Rotates the content by 180 degrees
+                      quarterTurns: 2,  
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.all(20.0),
-                        child: _buildQuestionAndOptionsCard(),
+                        child: _buildQuestionAndOptionsCard(
+                          isMyTurn: true,
+                        ),
                       ),
                     ),
                   ),
-                  // Central Divider
-                  Container(
-                    color:player1Turn?const Color.fromARGB(255, 40, 85, 167): const Color(0xFF28A745),
-                    margin: const EdgeInsets.symmetric(horizontal: 0), 
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        player1Turn ? const Text("Player 1's turn", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),) : const Text("Player 2's turn", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
-                        const SizedBox(width: 20,),
-                        TextButton(onPressed: (){
-
-                        }
-                        , child: Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(vertical: 10.0, horizontal: 20.0),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: const Color.fromARGB(255, 184, 156, 233), 
-                                ),
-                              child: Row(
-                                children: [
-                                  
-                                  Text("choose a Question", style: TextStyle(color: Colors.black, fontWeight: FontWeight.w700),),
-                                ],
-                              )),
-                          ],
-                        )),
-                      ],
-                    ),// No horizontal margin
+                   
+                  Transform.rotate(
+                    angle: player1Turn ? pi :0,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      color:player1Turn?const Color.fromARGB(255, 40, 85, 167): const Color(0xFF28A745),
+                      margin: const EdgeInsets.symmetric(horizontal: 0), 
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          player1Turn ? const Text("Player 1's turn", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),) : const Text("Player 2's turn", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),),
+                          const SizedBox(width: 20,),
+                        
+                   
+                        ],
+                      ), 
+                    ),
                   ),
-                  // Player 2's Question and Options (normal orientation)
+                   
                   Expanded(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.all(20.0),
-                      child: _buildQuestionAndOptionsCard(),
+                      child: _buildQuestionAndOptionsCard(
+                        isMyTurn: false
+                      ),
                     ),
                   ),
                 ],
               ),
             ),
-            // Bottom Scoreboard (Player 2)
+             
             _buildScoreboard(
               leftSegmentText: '0',
               rightSegmentText: 'PLAYER 2',
-              leftSegmentColor: const Color(0xFF6F42C1), // Purple for Player 2's score
-              rightSegmentColor: const Color(0xFF28A745), // Green for Player 2
+              leftSegmentColor: const Color(0xFF6F42C1),  
+              rightSegmentColor: const Color(0xFF28A745),  
             ),
           ],
         ),
@@ -110,7 +114,7 @@ class _QuizScreenState extends State<QuizScreen> {
     );
   }
 
-  // Helper method to build the scoreboard segments
+   
   Widget _buildScoreboard({
     required String leftSegmentText,
     required String rightSegmentText,
@@ -118,22 +122,22 @@ class _QuizScreenState extends State<QuizScreen> {
     required Color rightSegmentColor,
   }) {
     return SizedBox(
-      height: 60, // Fixed height for scoreboard
+      height: 60,  
       child: Row(
         children: [
-          // Left segment
+           
           Expanded(
             child: Container(
-              color: leftSegmentColor, // Background color for the left segment
-              alignment: Alignment.center, // Center the text within this segment
+              color: leftSegmentColor,  
+              alignment: Alignment.center,  
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10.0),
                 child: FittedBox(
-                  fit: BoxFit.scaleDown, // Shrink text if it's too long
+                  fit: BoxFit.scaleDown,  
                   child: Text(
                     leftSegmentText,
                     style: const TextStyle(
-                      color: Colors.white, // White text color
+                      color: Colors.white,  
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -142,19 +146,19 @@ class _QuizScreenState extends State<QuizScreen> {
               ),
             ),
           ),
-          // Right segment
+           
           Expanded(
             child: Container(
-              color: rightSegmentColor, // Background color for the right segment
-              alignment: Alignment.center, // Center the text within this segment
+              color: rightSegmentColor,  
+              alignment: Alignment.center,  
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 10.0),
                 child: FittedBox(
-                  fit: BoxFit.scaleDown, // Shrink text if it's too long
+                  fit: BoxFit.scaleDown,  
                   child: Text(
                     rightSegmentText,
                     style: const TextStyle(
-                      color: Colors.white, // White text color
+                      color: Colors.white,  
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
@@ -168,74 +172,127 @@ class _QuizScreenState extends State<QuizScreen> {
     );
   }
 
-  // Helper method to build the question and options card
-  Widget _buildQuestionAndOptionsCard() {
-    return Card(
-      margin: EdgeInsets.zero, // Remove default card margin
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(20), // Rounded corners for the card
-      ),
-      color: const Color(0xFFF8F0E3), // Light cream background for card
-      elevation: 5, // Shadow effect for the card
+   
+  Widget _buildQuestionAndOptionsCard({
+    required bool isMyTurn,
+
+  }) {
+    return  Container(
+      child: Column(
+        children: [
+
+      
+    chooseQuestionMode ? 
+    !isMyTurn ?const SizedBox():
+    Container(
+      margin: EdgeInsets.zero,  
+      
+      color: const Color(0xFFF8F0E3),  
+        
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start, // Align content to the start
+          crossAxisAlignment: CrossAxisAlignment.start,  
           children: [
             const Text(
-              'What is the capital of France?',
+              'Choose a question',
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF333333), // Dark grey text color
+                color: Color(0xFF333333),  
               ),
             ),
-            const SizedBox(height: 20), // Spacing below the question
-            // Answer options displayed in a grid
-            GridView.count(
-              shrinkWrap: true, // Allows GridView to take only necessary space
-              physics: const NeverScrollableScrollPhysics(), // Disables GridView's own scrolling
-              crossAxisCount: 2, // Two columns for options
-              mainAxisSpacing: 15, // Vertical spacing between grid items
-              crossAxisSpacing: 15, // Horizontal spacing between grid items
-              childAspectRatio: 2.5, // Adjust option button aspect ratio
-              children: [
-                _buildOptionButton('Berlin'),
-                _buildOptionButton('Madrid'),
-                _buildOptionButton('Paris'),
-                _buildOptionButton('Rome'),
-              ],
-            ),
+            const SizedBox(height: 20),  
+            Wrap(
+                  spacing: 15.0,  
+                  runSpacing: 15.0,  
+                  alignment: WrapAlignment.center,  
+                  children: remainingQuestionIndex.map((index) {
+                    return ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          currentQuestionIndex = index;
+                          remainingQuestionIndex.remove(index);
+                          chooseQuestionMode = false;
+                          
+                        });
+                        
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF5C2D7B),  
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10.0),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+                      ),
+                      child: Text(
+                        index.toString(),
+                        style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,  
+                        ),
+                      ),
+                    );
+                  }).toList()
+                ),
           ],
         ),
       ),
-    );
-  }
-
-  // Helper method to build individual option buttons
-  Widget _buildOptionButton(String text) {
-    return ElevatedButton(
-      onPressed: () {
-        // TODO: Implement logic for when an option button is pressed
-      },
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFFF0E5D4), // Slightly darker cream background
-        foregroundColor: const Color(0xFF333333), // Dark grey text color
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10), // Rounded corners for buttons
-        ),
-        elevation: 3, // Shadow effect for buttons
-      ),
-      child: FittedBox(
-        fit: BoxFit.scaleDown, // Shrink text if it's too long
-        child: Text(
-          text,
+    ) 
+    :
+    const SizedBox(),
+    chooseQuestionMode ? const SizedBox() :
+    Column(
+      children: [
+        Text("Question ${currentQuestionIndex + 1}: ${selectedQuestions[currentQuestionIndex]['question']}",
           style: const TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w500,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Color(0xFF333333),  
           ),
         ),
+        const SizedBox(height: 20),  
+        isMyTurn? GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,  
+            mainAxisSpacing: 10.0,  
+            crossAxisSpacing: 10.0,  
+          ),
+          itemCount: selectedQuestions[currentQuestionIndex]['options'].length,
+          shrinkWrap: true,  
+          physics: const NeverScrollableScrollPhysics(),  
+          itemBuilder: (context, index) {
+            return ElevatedButton(
+              onPressed: () {
+               
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF5C2D7B),  
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              ),
+              child: Text(
+                selectedQuestions[currentQuestionIndex]['options'][index],
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,  
+                ),
+              ),
+            );
+          },
+        ):
+        const SizedBox(),
+      ],
+    )
+      ],
+
       ),
-    );
+
+    ) ;
   }
+
 }
