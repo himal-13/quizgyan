@@ -27,10 +27,13 @@ class QuizScreen extends StatefulWidget {
 
 class _QuizScreenState extends State<QuizScreen> {
   bool player1Turn = true; 
+  bool player1ChooseQuestion = true;
   int player1Score = 0;
   int player2Score = 0;
   int currentQuestionIndex = 0; 
   bool chooseQuestionMode = true; 
+  bool firstAttempt = true;
+  bool secondAttempt = false;
   List <int> remainingQuestionIndex = List.generate(20, (index) => index);  
 
 
@@ -50,8 +53,8 @@ class _QuizScreenState extends State<QuizScreen> {
             RotatedBox(
               quarterTurns: 2,  
               child: _buildScoreboard( 
-                leftSegmentText: 'PLAYER 1',
-                rightSegmentText: '0',
+                leftSegmentText: "$player1Score",
+                rightSegmentText: 'Player 1',
                 leftSegmentColor: const Color.fromARGB(255, 40, 85, 167),  
                 rightSegmentColor: const Color(0xFF6F42C1),  
               ),
@@ -66,7 +69,8 @@ class _QuizScreenState extends State<QuizScreen> {
                       child: SingleChildScrollView(
                         padding: const EdgeInsets.all(20.0),
                         child: _buildQuestionAndOptionsCard(
-                          isMyTurn: true,
+                          isMyTurn: player1Turn,
+                          myTurntoChoose: player1ChooseQuestion,
                         ),
                       ),
                     ),
@@ -94,7 +98,8 @@ class _QuizScreenState extends State<QuizScreen> {
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.all(20.0),
                       child: _buildQuestionAndOptionsCard(
-                        isMyTurn: false
+                        isMyTurn: player1Turn ? false : true,
+                        myTurntoChoose: player1ChooseQuestion? false :true,
                       ),
                     ),
                   ),
@@ -103,7 +108,7 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
              
             _buildScoreboard(
-              leftSegmentText: '0',
+              leftSegmentText: "$player2Score",
               rightSegmentText: 'PLAYER 2',
               leftSegmentColor: const Color(0xFF6F42C1),  
               rightSegmentColor: const Color(0xFF28A745),  
@@ -175,20 +180,20 @@ class _QuizScreenState extends State<QuizScreen> {
    
   Widget _buildQuestionAndOptionsCard({
     required bool isMyTurn,
+    required bool myTurntoChoose,
 
   }) {
     return  Container(
+      padding: const EdgeInsets.all(20.0),
       child: Column(
         children: [
 
       
     chooseQuestionMode ? 
-    !isMyTurn ?const SizedBox():
+    !myTurntoChoose ?const SizedBox():
     Container(
       margin: EdgeInsets.zero,  
-      
       color: const Color(0xFFF8F0E3),  
-        
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -252,8 +257,30 @@ class _QuizScreenState extends State<QuizScreen> {
             color: Color(0xFF333333),  
           ),
         ),
-        const SizedBox(height: 20),  
-        isMyTurn? GridView.builder(
+        const SizedBox(height: 10),
+       secondAttempt ?Row(
+          children: [
+            Icon(Icons.forward, size: 23,),
+            const SizedBox(width: 10),
+          Text("${selectedQuestions[currentQuestionIndex]['answer']}",
+            style: const TextStyle(
+              fontSize: 16,
+              color: Color(0xFF555555),  
+            ),
+          ),
+          ],
+        ): const SizedBox(height: 10,),
+         secondAttempt && myTurntoChoose ? 
+        TextButton(onPressed: () {
+          setState(() {
+            chooseQuestionMode = true; 
+            firstAttempt = true;
+            secondAttempt = false;
+
+          });
+
+            }, child: Text("choose another question",)): const SizedBox(),
+        isMyTurn && !secondAttempt? GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,  
             mainAxisSpacing: 10.0,  
@@ -265,7 +292,62 @@ class _QuizScreenState extends State<QuizScreen> {
           itemBuilder: (context, index) {
             return ElevatedButton(
               onPressed: () {
-               
+            
+                //player should get 5 points for first attempt and 3 points for second attempt
+    bool isCorrect = selectedQuestions[currentQuestionIndex]['options'][index] ==
+                   selectedQuestions[currentQuestionIndex]['answer'];
+
+  if (isCorrect) {
+    setState(() {
+      if (firstAttempt) {
+        // Full points for first try
+        if (player1Turn) {
+          player1Score += 5;
+        } else {
+          player2Score += 5;
+        }
+      } else {
+        // Partial points for second try
+        if (player1Turn) {
+          player1Score += 3;
+        } else {
+          player2Score += 3;
+        }
+      }
+
+      // After correct answer, always go to question selection mode
+      chooseQuestionMode = true;
+
+      // Alternate question chooser
+      player1ChooseQuestion = !player1ChooseQuestion;
+
+      // Reset attempt flags
+      firstAttempt = true;
+      secondAttempt = false;
+
+      // Turn should follow who chooses the question next
+      player1Turn = player1ChooseQuestion;
+    });
+  } else {
+    setState(() {
+      if (firstAttempt) {
+        // If first attempt is wrong, give second chance to other player
+        firstAttempt = false;
+        player1Turn = !player1Turn;
+      } else {
+        // Both players failed, move to next question chooser
+        secondAttempt = true;
+        firstAttempt = true;
+
+        // Alternate question chooser
+        player1ChooseQuestion = !player1ChooseQuestion;
+
+        // Turn follows the next question chooser
+        player1Turn = player1ChooseQuestion;
+      }
+    });
+  }
+
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color(0xFF5C2D7B),  
