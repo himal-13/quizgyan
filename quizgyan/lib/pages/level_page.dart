@@ -71,21 +71,33 @@ class _LevelPageState extends State<LevelPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            const SizedBox(height: 10),
             // Top row: back button + question count
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                IconButton(onPressed:() {
-                  
-
-                },icon: Icon(Icons.arrow_back, color: Colors.white)),
-                Text(
-                  '${currentQuestionIndex+1} / 10',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
-              ],
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 107, 2, 206),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Level ${widget.level}",
+                    style: const TextStyle(
+                      fontFamily: 'serif',
+                      color: Color.fromARGB(255, 241, 164, 164),
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    '${currentQuestionIndex+1} / 10',
+                    style: TextStyle(color: const Color.fromARGB(255, 241, 164, 164), fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1.5, fontFamily: 'serif'),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 40),
+            const SizedBox(height: 30),
 
             // Question box
             Container(
