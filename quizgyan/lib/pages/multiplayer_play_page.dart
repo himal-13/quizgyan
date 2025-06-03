@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:quizgyan/components/multiplayer_result.dart';
 import 'package:quizgyan/constants/quiz_contant.dart';
 
 
@@ -34,6 +35,7 @@ class _QuizScreenState extends State<QuizScreen> {
   bool chooseQuestionMode = true; 
   bool firstAttempt = true;
   bool secondAttempt = false;
+  bool showResult = false;
   List <int> remainingQuestionIndex = List.generate(20, (index) => index);  
 
 
@@ -47,7 +49,7 @@ class _QuizScreenState extends State<QuizScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFFFBF5E5),  
       body: SafeArea(
-        child: Column(
+        child: showResult ? MultiplayerResult( player1Score: player1Score, player2Score: player2Score,): Column(
           children: [
              
             RotatedBox(
@@ -306,6 +308,7 @@ class _QuizScreenState extends State<QuizScreen> {
         } else {
           player2Score += 5;
         }
+
       } else {
         // Partial points for second try
         if (player1Turn) {
@@ -317,6 +320,9 @@ class _QuizScreenState extends State<QuizScreen> {
 
       // After correct answer, always go to question selection mode
       chooseQuestionMode = true;
+      if(remainingQuestionIndex.isEmpty) {
+        showResult = true; // Show result if no questions left
+      }
 
       // Alternate question chooser
       player1ChooseQuestion = !player1ChooseQuestion;
@@ -341,7 +347,9 @@ class _QuizScreenState extends State<QuizScreen> {
 
         // Alternate question chooser
         player1ChooseQuestion = !player1ChooseQuestion;
-
+        if(remainingQuestionIndex.isEmpty){
+          showResult = true; // Show result if no questions left
+        }
         // Turn follows the next question chooser
         player1Turn = player1ChooseQuestion;
       }
