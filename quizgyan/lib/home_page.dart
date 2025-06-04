@@ -3,11 +3,22 @@ import 'package:quizgyan/pages/about_page.dart';
 import 'package:quizgyan/pages/multiplayer_page.dart';
 import 'package:quizgyan/pages/play_quiz_page.dart';
 import 'package:quizgyan/pages/setting_page.dart';
+import 'package:store_redirect/store_redirect.dart';
 
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+
+  @override
+  void initState() {
+    super.initState();
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -168,7 +179,11 @@ class HomePage extends StatelessWidget {
                   height: 50.0,
                   child: ElevatedButton.icon(
                     onPressed: () {
-                      
+                      StoreRedirect.redirect(
+                        androidAppId: "com.himal13.quizgyan",
+                        // iOSAppId: "6482293361",
+                      );
+                              
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF5F258B), 
