@@ -1,186 +1,162 @@
 import 'package:flutter/material.dart';
-import 'package:quizgyan/components/level_complete_dialog.dart';
-import 'package:quizgyan/constants/quiz_contant.dart';
-
-
+import 'package:quizgyan/constants/science_questions.dart';
 
 class LevelPage extends StatefulWidget {
-  final int level;
-  const LevelPage({super.key, required this.level});
+  const LevelPage({super.key});
 
   @override
   State<LevelPage> createState() => _LevelPageState();
 }
 
 class _LevelPageState extends State<LevelPage> {
-
-    int currentQuestionIndex = 0; 
-    int score = 0;
-    bool optionClicked = false;
-    int? selectedOptionIndex;
-    bool showResult = false;
-
-
-
-  Widget buildOption(String text, Color color) {
-    int currentIndex = allLevels[widget.level - 1].questions[currentQuestionIndex].options.indexOf(text);
-
-    return TextButton(
-      onPressed: () {
-        if (!optionClicked) {
-          setState(() {
-            optionClicked = true;
-            selectedOptionIndex = currentIndex;
-            selectedOptionIndex = allLevels[widget.level - 1].questions[currentQuestionIndex].options.indexOf(text);
-            if (allLevels[widget.level - 1].questions[currentQuestionIndex].answer == text) {
-              score++;
-            }
-          });
-        }
-      },
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        margin: const EdgeInsets.all(5),
-        width: MediaQuery.of(context).size.width * 0.8,
-        decoration: BoxDecoration(
-          color: color,
-          borderRadius: BorderRadius.circular(30),
-        ),
-        child:  Center(
-          child: Text(
-            text,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-          
-        
-      ),
-    );
-  }
-
+  int currentQuestionIndex = 0;
+  int completedscienceQuestionsIndex = 0;
+  int? selectedOptionIndex;
+  bool? isAnswerCorrect;
+  bool optionClicked = false;
+  int level = 1; 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF2D006B),
-      body: showResult? LevelCompleteDialog(points: score*10) : Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            const SizedBox(height: 10),
-            // Top row: back button + question count
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 107, 2, 206),
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child: Row(
+      backgroundColor: Color(0xFF4B0082), // Deep purple background
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Top row with Level and Timer
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text("Level ${widget.level}",
-                    style: const TextStyle(
-                      fontFamily: 'serif',
-                      color: Color.fromARGB(255, 241, 164, 164),
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Text(
+                    //should have to change this to the level name
+                    "Level $level",
+                    style: TextStyle(color: Colors.white, fontSize: 18),
                   ),
                   Text(
-                    '${currentQuestionIndex+1} / 10',
-                    style: TextStyle(color: const Color.fromARGB(255, 241, 164, 164), fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1.5, fontFamily: 'serif'),
+                    "${completedscienceQuestionsIndex + 1} / ${scienceQuestions.length}",
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                  Row(
+                    children: [
+                        Icon(Icons.shield, color: Colors.green, size: 22),
+                        Icon(Icons.shield, color: Colors.green, size: 22),
+                        Icon(Icons.shield, color: Colors.green, size: 22),
+
+                    ],
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 30),
+              SizedBox(height: 10),
 
-            // Question box
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-              ),
-              child:  Text(
-                allLevels[widget.level - 1].questions[currentQuestionIndex].questionText,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
+              // Progress Bar
+              ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: LinearProgressIndicator(
+                  value:completedscienceQuestionsIndex/scienceQuestions.length, // 60%
+                  minHeight: 10,
+                  backgroundColor: Colors.black38,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
                 ),
               ),
-            ),
+              SizedBox(height: 30),
 
-            const SizedBox(height: 10),
-
-            // Options
-            ListView.builder(
-              itemCount: allLevels[widget.level - 1].questions[currentQuestionIndex].options.length,
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemBuilder: (context, index) {
-                final current = allLevels[widget.level - 1].questions[currentQuestionIndex];
-                final option = allLevels[widget.level - 1].questions[currentQuestionIndex].options;
-                return ListTile( title: buildOption(option[index],optionClicked && selectedOptionIndex == index ? (current.answer == option[index] ? const Color.fromARGB(255, 60, 230, 66) : const Color.fromARGB(255, 155, 20, 11) ): const Color.fromARGB(255, 33, 125, 245)));
-              }
-              
-            ),
-            optionClicked ?  TextButton(
-              onPressed: (){
-                  if (currentQuestionIndex >= 9) {
-                    setState(() {
-                    showResult = true;
-
-                    // Show the result dialog
-                    });
-                    return;
-
-                  }
-                    setState(() {
-                  currentQuestionIndex++;
-                  optionClicked = false;
-                  selectedOptionIndex = null;
-                      
-                    });
-
-
-                  
-     
-                
-              },
-              child: Container(
-              padding: const EdgeInsets.all(10.0),
-              
-              width: 70,
-              height: 70,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(35.0),
-                color: const Color(0xFF6900D1),
-                boxShadow: const [
-                  BoxShadow(
-                    color: Color.fromARGB(239, 0, 0, 0),
-                    blurRadius: 5.0,
-                    offset: Offset(0, 2),
+              SizedBox(height: 10),
+              Center(
+                child: Text(
+                  scienceQuestions[currentQuestionIndex].questionText,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
                   ),
-                ],
+                  textAlign: TextAlign.center,
+                ),
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Icon(Icons.arrow_forward, color: Colors.white, size: 32.0,),
-                ],
+              SizedBox(height: 40),
+
+              // Options
+              ListView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                itemCount: scienceQuestions[currentQuestionIndex].options.length,
+                itemBuilder: (context, index) {
+                  final option = scienceQuestions[currentQuestionIndex].options[index];
+                  return OptionButton(
+                    bgColor: selectedOptionIndex == index
+                        ? (index == scienceQuestions[currentQuestionIndex].answerIndex?Colors.green:Colors.red) // Change color when selected
+                        : Color(0xFF6A5ACD), // Slate blue color
+                    text: option,
+                    isSelected: false, // You can implement selection logic
+                    onPressed: () {
+                if (optionClicked && completedscienceQuestionsIndex >= scienceQuestions.length) return;
+
+                      setState(() {
+                        selectedOptionIndex = index;
+                        optionClicked = true; 
+                      });
+
+                      Future.delayed(Duration(milliseconds: 250), () {
+                        setState(() {
+                          completedscienceQuestionsIndex++;
+                          currentQuestionIndex++;
+                          optionClicked = false;
+                          selectedOptionIndex = null; 
+                        if((currentQuestionIndex+1)%5 ==0){
+                          level++;
+                      }
+                        });
+             
+                      });
+
+            
+                    },
+                  );
+
+                },
               ),
-            )):SizedBox()
-          
-          ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class OptionButton extends StatelessWidget {
+  final String text;
+  final bool isSelected;
+  final void Function()? onPressed;
+  final Color bgColor;// Slate blue color
+
+  const OptionButton({super.key, 
+    required this.text,
+    this.isSelected = false,
+    this.onPressed,
+    this.bgColor = const Color(0xFF6A5ACD),
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 6),
+      width: double.infinity,
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor:
+              bgColor,
+          padding: EdgeInsets.symmetric(vertical: 16),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
+        onPressed: () {
+          onPressed?.call();
+
+        },
+        child: Text(
+          text,
+          style: TextStyle(fontSize: 18, color: Colors.white),
         ),
       ),
     );
