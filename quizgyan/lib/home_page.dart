@@ -26,30 +26,24 @@ class _HomePageState extends State<HomePage> {
         
         decoration: const BoxDecoration(
           color: Color(0xFF3F005F), 
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF3F005F), 
-              Color(0xFF2D006B), 
-            ],
-          ),
+          // Keeping the base color similar to the original, but the image background is more dotted/textured.
+          // For simplicity, a solid color is used here. For the exact dotted pattern,
+          // you'd need to use an image asset or custom painter.
         ),
         child: SafeArea(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 32.0),
+            padding: const EdgeInsets.symmetric(horizontal: 32.0, vertical: 40.0),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.start, // Align to top as in the image
               children: <Widget>[
-                
+                // --- Start of original logo and app name section ---
                 const Icon(
                   Icons.lightbulb_outline,
                   color: Colors.yellow,
                   size: 80.0,
                 ),
-                const SizedBox(height: 20.0),
+                const SizedBox(height: 20.0), // Spacing between icon and text
 
-                
                 const Text(
                   'QUIZ',
                   style: TextStyle(
@@ -71,182 +65,188 @@ class _HomePageState extends State<HomePage> {
                     
                   ),
                 ),
-                const SizedBox(height: 50.0),
-
+                // --- End of original logo and app name section ---
                 
-                SizedBox(
-                  width: double.infinity,
-                  height: 60.0,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(context, 
-                        MaterialPageRoute(
-                          builder: (context) => const PlayQuizPage(),
-                        ),
-                      );
-                      
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF00C896), 
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15.0),
+                const SizedBox(height: 50.0), // Spacing below the app name section
+
+                // Grid of 4 main action buttons (Quickplay, Rounds, Levels, Multiplayer)
+                Expanded(
+                  child: GridView.count(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 20.0,
+                    mainAxisSpacing: 20.0,
+                    scrollDirection: Axis.vertical, // To prevent scrolling inside the column
+                    children: <Widget>[
+                      _buildActionButton(
+                        context,
+                        icon: Icons.timer, // Timer icon for Quickplay
+                        label: 'QUICKPLAY',
+                        color: const Color(0xFFE54F3F), // Red/orange color
+                        onPressed: () {
+                          Navigator.push(context, 
+                            MaterialPageRoute(
+                              builder: (context) => const PlayQuizPage(), // Mapped to PlayQuizPage
+                            ),
+                          );
+                        },
                       ),
-                      padding: const EdgeInsets.symmetric(vertical: 15.0),
-                    ),
-                    child: const Text(
-                      'SINGLE PLAYER',
-                      style: TextStyle(
-                        fontSize: 22.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                      _buildActionButton(
+                        context,
+                        icon: Icons.looks_two, // Placeholder for '10 Rounds' - a number icon, or a custom one if available
+                        label: '10 ROUNDS',
+                        color: const Color(0xFF3FCF96), // Green color
+                        onPressed: () {
+                          // Define action for 10 Rounds
+                        },
                       ),
-                    ),
+                      _buildActionButton(
+                        context,
+                        icon: Icons.bar_chart, // Or similar for Levels/Progress
+                        label: 'LEVELS',
+                        color: const Color(0xFFFFCC33), // Yellow color (same as QUIZ banner)
+                        onPressed: () {
+                          // Define action for Levels
+                        },
+                      ),
+                      _buildActionButton(
+                        context,
+                        icon: Icons.people, // People icon for Multiplayer
+                        label: 'MULTIPLAYER',
+                        color: const Color(0xFF5F258B), // Purple color
+                        onPressed: () {
+                          Navigator.push(context, 
+                            MaterialPageRoute(
+                              builder: (context) => const MultiplayerPage(),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 20.0),
+                const SizedBox(height: 30.0), // Spacing before the bottom row
 
-                
-                SizedBox(
-                  width: double.infinity,
-                  height: 60.0,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(context, 
-                        MaterialPageRoute(
-                          builder: (context) => const MultiplayerPage(),
-                        ),
-                      );
-                      
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF9800), 
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15.0),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 15.0),
+                // Bottom row of buttons (Settings, Rate Us, More Apps)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround, // Distribute evenly
+                  children: <Widget>[
+                    _buildBottomIconTextButton(
+                      context,
+                      icon: Icons.settings,
+                      label: 'SETTINGS',
+                      onPressed: () {
+                        Navigator.push(context, 
+                          MaterialPageRoute(
+                            builder: (context) => const SettingPage(),
+                          ),
+                        );
+                      },
                     ),
-                    child: const Text(
-                      'MULTIPLAYER',
-                      style: TextStyle(
-                        fontSize: 22.0,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
+                    _buildBottomIconTextButton(
+                      context,
+                      icon: Icons.star,
+                      label: 'RATE US',
+                      onPressed: () {
+                        StoreRedirect.redirect(
+                          androidAppId: "com.himal13.quizgyan",
+                          // iOSAppId: "6482293361",
+                        );
+                      },
                     ),
-                  ),
-                ),
-                const SizedBox(height: 50.0),
-
-                
-                SizedBox(
-                  width: double.infinity,
-                  height: 50.0,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(context, 
-                        MaterialPageRoute(
-                          builder: (context) => const SettingPage(),
-                        ),
-                      );
-                      
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF5F258B), 
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15.0),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 10.0),
+                    _buildBottomIconTextButton(
+                      context,
+                      icon: Icons.apps, // More Apps icon
+                      label: 'MORE APPS',
+                      onPressed: () {
+                        Navigator.push(context, 
+                          MaterialPageRoute(
+                            builder: (context) => const AboutPage(), // Mapped to AboutPage as a placeholder
+                          ),
+                        );
+                      },
                     ),
-                    icon: const Icon(
-                      Icons.settings,
-                      color: Colors.white,
-                      size: 25.0,
-                    ),
-                    label: const Text(
-                      'SETTINGS',
-                      style: TextStyle(
-                        fontSize: 20.0,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 15.0),
-
-                
-                SizedBox(
-                  width: double.infinity,
-                  height: 50.0,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      StoreRedirect.redirect(
-                        androidAppId: "com.himal13.quizgyan",
-                        // iOSAppId: "6482293361",
-                      );
-                              
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF5F258B), 
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15.0),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 10.0),
-                    ),
-                    icon: const Icon(
-                      Icons.star,
-                      color: Colors.white,
-                      size: 25.0,
-                    ),
-                    label: const Text(
-                      'RATE US',
-                      style: TextStyle(
-                        fontSize: 20.0,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 15.0),
-
-                
-                SizedBox(
-                  width: double.infinity,
-                  height: 50.0,
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.push(context, 
-                        MaterialPageRoute(
-                          builder: (context) => const AboutPage(),
-                        ),
-                      );
-                      
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF5F258B), 
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15.0),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 10.0),
-                    ),
-                    icon: const Icon(
-                      Icons.info,
-                      color: Colors.white,
-                      size: 25.0,
-                    ),
-                    label: const Text(
-                      'INFO',
-                      style: TextStyle(
-                        fontSize: 20.0,
-                        color: Colors.white,
-                      ),
-                    ),
-                  ),
+                  ],
                 ),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  // Helper widget to build the larger action buttons (Quickplay, Rounds, etc.)
+  Widget _buildActionButton(BuildContext context, {
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onPressed,
+  }) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        decoration: BoxDecoration(
+          color: color,
+          borderRadius: BorderRadius.circular(20.0), // Rounded corners
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              spreadRadius: 2,
+              blurRadius: 5,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Icon(
+              icon,
+              color: Colors.white,
+              size: 50.0, // Icon size
+            ),
+            const SizedBox(height: 10.0),
+            Text(
+              label,
+              style: const TextStyle(
+                fontFamily: 'Montserrat',
+                fontSize: 18.0, // Font size for labels
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Helper widget to build the bottom icon-text buttons (Settings, Rate Us, More Apps)
+  Widget _buildBottomIconTextButton(BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onPressed,
+  }) {
+    return Column(
+      children: <Widget>[
+        IconButton(
+          icon: Icon(
+            icon,
+            color: Colors.white, // Icon color
+            size: 40.0, // Icon size
+          ),
+          onPressed: onPressed,
+        ),
+        Text(
+          label,
+          style: const TextStyle(
+            fontFamily: 'Montserrat',
+            fontSize: 16.0, // Font size for labels
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
     );
   }
 }
