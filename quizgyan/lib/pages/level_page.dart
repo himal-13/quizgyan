@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:quizgyan/constants/science_questions.dart';
+import 'package:quizgyan/constants/questions/science_questions.dart';
 
 class LevelPage extends StatefulWidget {
   const LevelPage({super.key});
