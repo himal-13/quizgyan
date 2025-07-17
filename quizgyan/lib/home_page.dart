@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:quizgyan/pages/about_page.dart';
 import 'package:quizgyan/pages/level_page.dart';
 import 'package:quizgyan/pages/multiplayer_page.dart';
-import 'package:quizgyan/pages/play_quiz_page.dart';
+import 'package:quizgyan/pages/quick_play.dart';
 import 'package:quizgyan/pages/round_page.dart';
 import 'package:quizgyan/pages/setting_page.dart';
 import 'package:store_redirect/store_redirect.dart';

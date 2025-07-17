@@ -35,8 +35,6 @@ class _RoundsPageState extends State<RoundsPage> {
   bool _answerChecked = false;
   // Flag specific to the Buzzer Round: true when the buzzer is clicked and options are revealed
   bool _buzzerClicked = false;
-  // Flag to control the initial "Start Game" screen (removed, game starts immediately)
-  // bool _gameStarted = false;
 
   // Names of the rounds for display
   final List<String> _roundNames = [
@@ -48,7 +46,7 @@ class _RoundsPageState extends State<RoundsPage> {
   // Descriptions for each round
   final List<String> _roundDescriptions = [
     'Answer 5 questions. Each question has 15 seconds. Correct answer: +10 points.',
-    'Answer 5 questions. Each question has 15 seconds. Click the buzzer to reveal options. Correct answer: +15 points, Wrong answer: -5 points.', // Removed "If you give up, -5 points."
+    'Answer 5 questions. Each question has 15 seconds. Click the buzzer to reveal options. Correct answer: +15 points, Wrong answer: -5 points.',
     'Answer 5 questions in 20 seconds. Correct answer: +5 points.',
   ];
 
@@ -56,7 +54,6 @@ class _RoundsPageState extends State<RoundsPage> {
   void initState() {
     super.initState();
     // Game starts automatically when the page is initialized
-    // Schedule the initialization to run after the first frame is rendered
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeGame();
     });
@@ -81,8 +78,9 @@ class _RoundsPageState extends State<RoundsPage> {
     _answerChecked = false;
     _buzzerClicked = false;
 
-    // Show introduction for the first round
-    _showRoundIntroDialog();
+    // Directly prepare and start the first round without showing an intro dialog
+    _prepareRound();
+    _startRoundActual();
   }
 
   // Prepares the questions and time for a new round, then shows the intro dialog
@@ -118,6 +116,8 @@ class _RoundsPageState extends State<RoundsPage> {
     } else if (_currentRoundIndex == 2) {
       _timeLeft = 20; // Rapid Fire Round: 20 seconds for all 5 questions
     }
+    // Update state to reflect prepared round data
+    setState(() {});
   }
 
   // Displays a dialog introducing the current round
@@ -195,9 +195,12 @@ class _RoundsPageState extends State<RoundsPage> {
         if (_currentRoundIndex == 2) {
           // For Rapid Fire, if time runs out, the round ends
           _nextQuestionOrRound();
+        } else if (_currentRoundIndex == 1 && !_buzzerClicked) {
+          // NEW: For Buzzer Round, if time runs out and buzzer was NOT clicked, no penalty.
+          _nextQuestionOrRound();
         } else {
-          // For Basic/Buzzer, if time runs out, it's considered a wrong answer
-          // and moves to the next question
+          // For Basic Round, or Buzzer Round if buzzer WAS clicked,
+          // if time runs out and no answer was checked, treat as wrong.
           if (!_answerChecked) {
             _checkAnswer(''); // Treat as unanswered/wrong
           } else {
@@ -234,15 +237,21 @@ class _RoundsPageState extends State<RoundsPage> {
       }
     } else if (_currentRoundIndex == 1) {
       // Buzzer Round
-      if (isCorrect) {
-        setState(() {
-          _score += 15;
-        });
-      } else {
-        setState(() {
-          _score -= 5;
-        });
+      // Only apply scoring if buzzer was clicked
+      if (_buzzerClicked) {
+        if (isCorrect) {
+          setState(() {
+            _score += 15;
+          });
+        } else {
+          setState(() {
+            _score -= 5;
+          });
+        }
       }
+      // If buzzer was not clicked, no score change, and this checkAnswer
+      // should ideally only be called when time runs out without buzzer,
+      // which is now handled by _startTimer to just move on.
     } else if (_currentRoundIndex == 2) {
       // Rapid Fire Round
       if (isCorrect) {
@@ -325,7 +334,6 @@ class _RoundsPageState extends State<RoundsPage> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop(); // Close the dialog
-                  // No need to set _gameStarted to false, as it's removed
                   _initializeGame(); // Restart the entire game
                 },
                 style: ElevatedButton.styleFrom(
@@ -358,9 +366,6 @@ class _RoundsPageState extends State<RoundsPage> {
 
   @override
   Widget build(BuildContext context) {
-    // No initial "Start Game" screen, game starts immediately.
-    // The check for _gameStarted is removed.
-
     // Show a loading/empty state if questions are not yet loaded or available
     if (_allGameQuestions.isEmpty || _currentRoundQuestions.isEmpty) {
       return Scaffold(

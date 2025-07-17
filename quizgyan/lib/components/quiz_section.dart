@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:quizgyan/pages/multiplayer_page.dart';
-import 'package:quizgyan/pages/play_quiz_page.dart';
+import 'package:quizgyan/pages/quick_play.dart';
 
 class QuizSection extends StatefulWidget {
   const QuizSection({super.key});

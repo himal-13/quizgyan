@@ -13,14 +13,16 @@ class QuickPlayQuizPage extends StatefulWidget {
 }
 
 class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
-  List<Question> _allQuestions = []; // Changed from _level1Questions
+  List<Question> _allQuestions = [];
   int _currentQuestionIndex = 0;
   int _score = 0;
-  int _timeLeft = 120; // Initial total game time in seconds (120 seconds)
+  int _timeLeft =
+      60; // Initial total game time in seconds (CHANGED to 60 seconds)
   Timer? _timer;
   bool _quizEnded = false;
   String? _selectedOption;
   bool _answerChecked = false;
+  int _questionsAnswered = 0; // New: To track how many questions were attempted
 
   @override
   void initState() {
@@ -33,10 +35,11 @@ class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
     _allQuestions = List<Question>.from(nepaliQuizQuestions)..shuffle(Random());
     _currentQuestionIndex = 0;
     _score = 0;
-    _timeLeft = 120; // Reset to 120 seconds for a new game
+    _timeLeft = 60; // Reset to 60 seconds for a new game (CHANGED)
     _quizEnded = false;
     _selectedOption = null;
     _answerChecked = false;
+    _questionsAnswered = 0; // Reset for a new game
     _startTimer();
   }
 
@@ -61,6 +64,7 @@ class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
     setState(() {
       _selectedOption = selectedAnswer;
       _answerChecked = true;
+      _questionsAnswered++; // Increment answered questions regardless of correctness
     });
 
     final currentQuestion = _allQuestions[_currentQuestionIndex];
@@ -101,6 +105,11 @@ class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
   }
 
   void _showGameOverDialog() {
+    double accuracy = 0.0;
+    if (_questionsAnswered > 0) {
+      accuracy = (_score / _questionsAnswered) * 100;
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false, // User must tap button to dismiss
@@ -119,7 +128,12 @@ class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'तपाईंको स्कोर: $_score',
+                'तपाईंको स्कोर: $_score / $_questionsAnswered', // Show score out of answered questions
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+              SizedBox(height: 10),
+              Text(
+                'सटीकता: ${accuracy.toStringAsFixed(2)}%', // Display accuracy
                 style: TextStyle(color: Colors.white, fontSize: 20),
               ),
               SizedBox(height: 20),
@@ -138,6 +152,26 @@ class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
                 child: Text(
                   'फेरि खेल्नुहोस्',
                   style: TextStyle(fontSize: 18, color: Colors.black),
+                ),
+              ),
+              SizedBox(height: 10), // Space between buttons
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                  Navigator.of(
+                    context,
+                  ).pop(); // Navigate back to previous screen (e.g., home)
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red, // Quit button color
+                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+                child: Text(
+                  'Quit', // English "Quit" button
+                  style: TextStyle(fontSize: 18, color: Colors.white),
                 ),
               ),
             ],
