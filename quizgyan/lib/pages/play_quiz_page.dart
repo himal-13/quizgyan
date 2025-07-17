@@ -1,147 +1,376 @@
 import 'package:flutter/material.dart';
-import 'package:quizgyan/pages/level_page.dart';
+import 'dart:async'; // For Timer
+import 'dart:math';
 
+import '../constants/questions.dart'; // For Random
 
-
-
-class PlayQuizPage extends StatefulWidget {
-  const PlayQuizPage({super.key});
+// Main QuickPlayQuizPage Widget
+class QuickPlayQuizPage extends StatefulWidget {
+  const QuickPlayQuizPage({super.key});
 
   @override
-  State<PlayQuizPage> createState() => _PlayQuizPageState();
+  State<QuickPlayQuizPage> createState() => _QuickPlayQuizPageState();
 }
 
-class _PlayQuizPageState extends State<PlayQuizPage> {
-   
-   List<QuizCategory> categories = [
-    QuizCategory('TECHNOLOGY', Icons.computer, Colors.orange[700]!),
-    QuizCategory('SCIENCE', Icons.science, Colors.cyan[700]!),
-    QuizCategory('CULTURE', Icons.theater_comedy, Colors.pink[700]!),
-    QuizCategory('GEOGRAPHY', Icons.public, Colors.green[700]!),
-    QuizCategory('IQ', Icons.psychology, Colors.blue[700]!),
-    QuizCategory('HISTORY', Icons.menu_book, Colors.amber[700]!),
-    QuizCategory('MOVIES', Icons.movie, Colors.redAccent[700]!),
-    QuizCategory('SPORTS', Icons.sports_soccer, Colors.deepOrange[700]!),
-    QuizCategory('MATHS', Icons.calculate, Colors.purple[700]!),
-    QuizCategory('LITERATURE', Icons.book, Colors.teal[700]!),
-    QuizCategory('ART', Icons.brush, Colors.deepPurple[700]!),
-    QuizCategory('MUSIC', Icons.music_note, Colors.indigo[700]!),
-    QuizCategory('FOOD', Icons.fastfood, Colors.brown[700]!),
-    QuizCategory('ANIMALS', Icons.pets, Colors.lightGreen[700]!),
-    QuizCategory('SPACE', Icons.space_bar, Colors.blueGrey[700]!),
-    QuizCategory('HEALTH', Icons.health_and_safety, Colors.lime[700]!),
-    QuizCategory('FASHION', Icons.checkroom, Colors.pinkAccent[700]!),
-    QuizCategory('TRAVEL', Icons.airplanemode_active, Colors.lightBlue[700]!),
-    QuizCategory('BUSINESS', Icons.business, Colors.deepOrangeAccent[700]!),
-    QuizCategory('POLITICS', Icons.gavel, Colors.grey[700]!),
-    QuizCategory('RELIGION', Icons.church, Colors.amberAccent[700]!),
-    QuizCategory('LANGUAGES', Icons.translate, Colors.cyanAccent[700]!),
-    QuizCategory('PHILOSOPHY', Icons.lightbulb, Colors.yellow[700]!),
-  ];
+class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
+  List<Question> _allQuestions = []; // Changed from _level1Questions
+  int _currentQuestionIndex = 0;
+  int _score = 0;
+  int _timeLeft = 120; // Initial total game time in seconds (120 seconds)
+  Timer? _timer;
+  bool _quizEnded = false;
+  String? _selectedOption;
+  bool _answerChecked = false;
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Play QUIZ', style: TextStyle(fontSize: 24, color: Colors.white),),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
-        ),
-      ),
-      backgroundColor: Colors.deepPurple[900],
-      
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Container(
-            //   padding: EdgeInsets.symmetric(vertical: 20),
-            //   child: Center(
-            //     child: Text(
-                  
-            //       style: TextStyle(
-            //         fontSize: 30,
-            //         fontWeight: FontWeight.bold,
-            //         color: Colors.white,
-            //         letterSpacing: 2,
-            //       ),
-            //     ),
-            //   ),
-            // ),
-            Expanded(
-              child: GridView.count(
-                crossAxisCount: 2,
-                padding: EdgeInsets.all(12),
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                children: categories
-                    .map((category) => CategoryCard(category: category))
-                    .toList(),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+  void initState() {
+    super.initState();
+    _initializeQuiz();
   }
-}
 
-class QuizCategory {
-  final String title;
-  final IconData icon;
-  final Color color;
+  void _initializeQuiz() {
+    // Use all questions and shuffle them, removing level filtering
+    _allQuestions = List<Question>.from(nepaliQuizQuestions)..shuffle(Random());
+    _currentQuestionIndex = 0;
+    _score = 0;
+    _timeLeft = 120; // Reset to 120 seconds for a new game
+    _quizEnded = false;
+    _selectedOption = null;
+    _answerChecked = false;
+    _startTimer();
+  }
 
-  QuizCategory(this.title, this.icon, this.color);
-}
+  void _startTimer() {
+    _timer?.cancel(); // Cancel any existing timer
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      if (_timeLeft > 0 && !_quizEnded) {
+        setState(() {
+          _timeLeft--;
+        });
+      } else {
+        _endGame();
+      }
+    });
+  }
 
-class CategoryCard extends StatelessWidget {
-  final QuizCategory category;
+  void _checkAnswer(String selectedAnswer) {
+    if (_answerChecked || _quizEnded) {
+      return; // Prevent multiple selections or selection after game over
+    }
 
-  const CategoryCard({super.key, required this.category});
+    setState(() {
+      _selectedOption = selectedAnswer;
+      _answerChecked = true;
+    });
 
-  @override
-  Widget build(BuildContext context) {
-    return TextButton(
-      onPressed: () {
-        // Navigate to the quiz page for the selected category
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => LevelPage(), // Replace with actual quiz page
+    final currentQuestion = _allQuestions[_currentQuestionIndex];
+    if (selectedAnswer == currentQuestion.answer) {
+      setState(() {
+        _score++;
+        _timeLeft += 3; // Add 3 seconds for a correct answer
+      });
+    } else {
+      setState(() {
+        _timeLeft -= 2; // Subtract 2 seconds for a wrong answer
+        if (_timeLeft < 0) _timeLeft = 0; // Ensure time doesn't go negative
+      });
+    }
+
+    // Wait a bit before moving to the next question or ending the game
+    Future.delayed(Duration(seconds: 1), () {
+      if (_currentQuestionIndex < _allQuestions.length - 1) {
+        setState(() {
+          _currentQuestionIndex++;
+          _selectedOption = null; // Reset selected option for next question
+          _answerChecked = false; // Reset answer checked state
+          // Timer continues, no reset per question
+        });
+      } else {
+        _endGame(); // End game if all questions are answered
+      }
+    });
+  }
+
+  void _endGame() {
+    _timer?.cancel();
+    setState(() {
+      _quizEnded = true;
+    });
+    // You can navigate to a results screen or show a dialog here
+    _showGameOverDialog();
+  }
+
+  void _showGameOverDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false, // User must tap button to dismiss
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          backgroundColor: Colors.deepPurple.shade700,
+          title: Text(
+            'खेल समाप्त!',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'तपाईंको स्कोर: $_score',
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                  _initializeQuiz(); // Restart the quiz
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.amber, // Button color
+                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+                child: Text(
+                  'फेरि खेल्नुहोस्',
+                  style: TextStyle(fontSize: 18, color: Colors.black),
+                ),
+              ),
+            ],
           ),
         );
       },
-      child: Container(
-        decoration: BoxDecoration(
-          color: category.color,
-          borderRadius: BorderRadius.circular(12),
+    );
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_allQuestions.isEmpty) {
+      return Scaffold(
+        backgroundColor: Colors.blueGrey.shade900,
+        body: Center(
+          child: Text(
+            'प्रश्नहरू उपलब्ध छैनन्।', // Updated message
+            style: TextStyle(color: Colors.white, fontSize: 20),
+            textAlign: TextAlign.center,
+          ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              category.icon,
-              size: 50,
-              color: Colors.white,
-            ),
-            SizedBox(height: 10),
-            Text(
-              category.title,
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: Colors.white,
+      );
+    }
+
+    final currentQuestion = _allQuestions[_currentQuestionIndex];
+
+    return Scaffold(
+      backgroundColor: Colors.blueGrey.shade900,
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              // Top Bar: Timer, Score
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Timer
+                  Container(
+                    padding: EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color.fromARGB(46, 0, 0, 0),
+                          spreadRadius: 1,
+                          blurRadius: 3,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.timer, color: Colors.green.shade700),
+                        SizedBox(width: 5),
+                        Text(
+                          '$_timeLeft',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Score
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.red.shade700,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Text(
+                          'SCORE $_score',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-            ),
-            Text(
-              'Level 1',
-              style: TextStyle(color: Colors.white70),
-            ),
-          ],
+              SizedBox(height: 30),
+
+              // Quiz Title
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 20),
+                decoration: BoxDecoration(
+                  color: Colors.pink.shade600,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color.fromARGB(90, 0, 0, 0),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  'QUIZ',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+
+              // Question Card
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.deepPurple.shade700,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color.fromARGB(80, 0, 0, 0),
+                      spreadRadius: 2,
+                      blurRadius: 5,
+                      offset: Offset(0, 5),
+                    ),
+                  ],
+                ),
+                child: Text(
+                  currentQuestion.question,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              SizedBox(height: 20),
+
+              // Options
+              Expanded(
+                child: ListView.builder(
+                  itemCount: currentQuestion.options.length,
+                  itemBuilder: (context, index) {
+                    final option = currentQuestion.options[index];
+                    Color optionColor = Colors.blue.shade700; // Default color
+                    if (_answerChecked) {
+                      if (option == currentQuestion.answer) {
+                        optionColor = Colors.green.shade700; // Correct answer
+                      } else if (option == _selectedOption) {
+                        optionColor = Colors.red.shade700; // Wrong selected
+                      }
+                    }
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: GestureDetector(
+                        onTap: () => _checkAnswer(option),
+                        child: Container(
+                          padding: EdgeInsets.all(15),
+                          decoration: BoxDecoration(
+                            color: optionColor,
+                            borderRadius: BorderRadius.circular(15),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color.fromARGB(75, 0, 0, 0),
+                                spreadRadius: 1,
+                                blurRadius: 3,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            children: [
+                              // Placeholder for image (as per request, same image for each option)
+                              // You can replace this with an actual image asset if available
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    String.fromCharCode(
+                                      65 + index,
+                                    ), // A, B, C, D
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              SizedBox(width: 15),
+                              Expanded(
+                                child: Text(
+                                  option,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

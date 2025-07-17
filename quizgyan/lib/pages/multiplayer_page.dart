@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:quizgyan/pages/multiplayer_play_page.dart';
-
-
+import 'package:quizgyan/pages/two_player_play.dart'; // Make sure this path is correct
 
 class MultiplayerPage extends StatefulWidget {
   const MultiplayerPage({super.key});
@@ -11,8 +9,21 @@ class MultiplayerPage extends StatefulWidget {
 }
 
 class _MultiplayerPageState extends State<MultiplayerPage> {
-  int selectedPlayers = 2;
-  int selectedQuestions = 20;
+  int selectedQuestions = 20; // Default to 20 questions
+  // Create individual controllers for each player
+  final TextEditingController _player1Controller = TextEditingController(
+    text: 'Player 1',
+  );
+  final TextEditingController _player2Controller = TextEditingController(
+    text: 'Player 2',
+  );
+
+  @override
+  void dispose() {
+    _player1Controller.dispose();
+    _player2Controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,8 +34,7 @@ class _MultiplayerPageState extends State<MultiplayerPage> {
           padding: const EdgeInsets.all(20),
           child: Column(
             children: [
-              // SETTINGS heading
-              Text(
+              const Text(
                 "Multiplayer Mode",
                 style: TextStyle(
                   fontSize: 32,
@@ -33,84 +43,98 @@ class _MultiplayerPageState extends State<MultiplayerPage> {
                 ),
               ),
               const SizedBox(height: 30),
-                buildSectionTitle("GAME RULES"),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Color(0xFF4D2418),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    ruleText("1. Each player takes turns to answer."),
-                    ruleText("2. The first player answers a question, then the second player."),
-                    ruleText("3. Player have to choose remianing question as number remaining on the screen."),
-                    ruleText("4. Correct answer for first player will get 5 points and 3 points for second player."),
-                    ruleText("5. Incorrect answer: no penalty."),
-                    ruleText("6. Most points win the game."),
-                  ],
+              // Player Name Editing
+              buildSectionTitle("PLAYER NAMES"),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: TextField(
+                  controller: _player1Controller,
+                  style: const TextStyle(color: Colors.white, fontSize: 18),
+                  decoration: InputDecoration(
+                    labelText: 'Player 1 Name',
+                    labelStyle: const TextStyle(color: Color(0xFFFDEBCF)),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color(0xFF7A4434)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color(0xFFFDEBCF)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
                 ),
               ),
-              const SizedBox(height: 20),
-
-              // Number of Players
-              buildSectionTitle("NUMBER OF PLAYERS"),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [2, 3, 4].map((player) {
-                  return buildOptionButton(
-                    label: "$player",
-                    isSelected: selectedPlayers == player,
-                    onTap: () {
-                      setState(() {
-                        // selectedPlayers = player;
-                      });
-                    },
-                  );
-                }).toList(),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8.0),
+                child: TextField(
+                  controller: _player2Controller,
+                  style: const TextStyle(color: Colors.white, fontSize: 18),
+                  decoration: InputDecoration(
+                    labelText: 'Player 2 Name',
+                    labelStyle: const TextStyle(color: Color(0xFFFDEBCF)),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color(0xFF7A4434)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: const BorderSide(color: Color(0xFFFDEBCF)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
 
               // Number of Questions
               buildSectionTitle("NUMBER OF QUESTIONS"),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [20, 30, 40].map((num) {
-                  return buildOptionButton(
-                    label: "$num",
-                    isSelected: selectedQuestions == num,
-                    onTap: () {
-                      setState(() {
-                        // selectedQuestions = num;
-                      });
-                    },
-                  );
-                }).toList(),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(16, (index) {
+                    // Generates numbers from 20 to 50, incrementing by 2
+                    int num = 20 + (index * 2);
+                    return buildOptionButton(
+                      label: "$num",
+                      isSelected: selectedQuestions == num,
+                      onTap: () {
+                        setState(() {
+                          selectedQuestions = num;
+                        });
+                      },
+                    );
+                  }),
+                ),
               ),
               const SizedBox(height: 30),
 
-              // Game Rules
-            
-              Spacer(),
+              const Spacer(),
 
               // Start Button
               GestureDetector(
                 onTap: () {
-                  Navigator.push(context,
+                  Navigator.push(
+                    context,
                     MaterialPageRoute(
-                      builder: (context) => MultiplayerPlayPage(),
+                      builder: (context) => TwoPlayerPlay(
+                        totalQuestions: selectedQuestions,
+                        player1Name:
+                            _player1Controller.text, // Pass individual names
+                        player2Name: _player2Controller.text,
+                      ),
                     ),
                   );
-                  // Handle start logic
                 },
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 60),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 15,
+                    horizontal: 60,
+                  ),
                   decoration: BoxDecoration(
-                    color: Color(0xFFFF5C5C),
+                    color: const Color(0xFFFF5C5C),
                     borderRadius: BorderRadius.circular(30),
                   ),
-                  child: Text(
+                  child: const Text(
                     "START",
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
@@ -133,7 +157,7 @@ class _MultiplayerPageState extends State<MultiplayerPage> {
       padding: const EdgeInsets.only(bottom: 10),
       child: Text(
         title,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 18,
           color: Color(0xFFFDEBCF),
           fontWeight: FontWeight.bold,
@@ -156,30 +180,19 @@ class _MultiplayerPageState extends State<MultiplayerPage> {
           height: 50,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isSelected ? Color(0xFFFDEBCF) : Color(0xFF7A4434),
+            color: isSelected
+                ? const Color(0xFFFDEBCF)
+                : const Color(0xFF7A4434),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Text(
             label,
             style: TextStyle(
-              color: isSelected ? Color(0xFF5C2E1F) : Colors.white,
+              color: isSelected ? const Color(0xFF5C2E1F) : Colors.white,
               fontWeight: FontWeight.bold,
               fontSize: 18,
             ),
           ),
-        ),
-      ),
-    );
-  }
-
-  Widget ruleText(String rule) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Text(
-        rule,
-        style: TextStyle(
-          color: Color(0xFFFDEBCF),
-          fontSize: 16,
         ),
       ),
     );

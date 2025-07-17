@@ -22,27 +22,27 @@ class _QuizSectionState extends State<QuizSection> {
               margin: const EdgeInsets.only(left: 10.0),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10.0),
-                border: Border.all(
-                  color: Colors.blue,
-                  width: 2.0,
-                ),
+                border: Border.all(color: Colors.blue, width: 2.0),
               ),
               child: Column(
                 children: [
                   TextButton(
                     onPressed: () {
-                      Navigator.push(context, MaterialPageRoute(
-                        builder: (context) => const PlayQuizPage(),
-                      ));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const QuickPlayQuizPage(),
+                        ),
+                      );
                     },
                     child: Container(
                       padding: const EdgeInsets.all(15.0),
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10.0),
                         color: Colors.blue,
-                        
                       ),
-                      child: const Icon(Icons.quiz)),
+                      child: const Icon(Icons.quiz),
+                    ),
                   ),
                   const Text(
                     'Play Quiz',
@@ -54,21 +54,21 @@ class _QuizSectionState extends State<QuizSection> {
                 ],
               ),
             ),
-             TextButton(
+            TextButton(
               onPressed: () {
-                Navigator.push(context, MaterialPageRoute(
-                  builder: (context) => const MultiplayerPage(),
-                ));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const MultiplayerPage(),
+                  ),
+                );
               },
-               child: Container(
+              child: Container(
                 padding: const EdgeInsets.all(10.0),
                 margin: const EdgeInsets.only(left: 10.0),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(10.0),
-                  border: Border.all(
-                    color: Colors.blue,
-                    width: 2.0,
-                  ),
+                  border: Border.all(color: Colors.blue, width: 2.0),
                 ),
                 child: Column(
                   children: [
@@ -77,9 +77,9 @@ class _QuizSectionState extends State<QuizSection> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(10.0),
                         color: Colors.blue,
-                        
                       ),
-                      child: const Icon(Icons.people)),
+                      child: const Icon(Icons.people),
+                    ),
                     const Text(
                       'Multiplayer',
                       style: TextStyle(
@@ -89,8 +89,8 @@ class _QuizSectionState extends State<QuizSection> {
                     ),
                   ],
                 ),
-                           ),
-             ),
+              ),
+            ),
           ],
         ),
       ],
