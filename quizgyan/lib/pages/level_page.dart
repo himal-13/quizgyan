@@ -16,7 +16,12 @@ class LevelsPage extends StatelessWidget {
       appBar: AppBar(
         title: Text('Select Level', style: TextStyle(color: Colors.white)),
         centerTitle: true,
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.transparent,
+        automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: Container(
         decoration: BoxDecoration(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quizgyan/services/audio_services.dart';
 import 'dart:async'; // For Timer
 import 'dart:math';
 
@@ -56,7 +57,7 @@ class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
     });
   }
 
-  void _checkAnswer(String selectedAnswer) {
+  void _checkAnswer(String selectedAnswer) async {
     if (_answerChecked || _quizEnded) {
       return; // Prevent multiple selections or selection after game over
     }
@@ -68,12 +69,15 @@ class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
     });
 
     final currentQuestion = _allQuestions[_currentQuestionIndex];
+
     if (selectedAnswer == currentQuestion.answer) {
+      SoundService().playSuccess();
       setState(() {
         _score++;
         _timeLeft += 3; // Add 3 seconds for a correct answer
       });
     } else {
+      SoundService().playFailed();
       setState(() {
         _timeLeft -= 2; // Subtract 2 seconds for a wrong answer
         if (_timeLeft < 0) _timeLeft = 0; // Ensure time doesn't go negative
@@ -97,6 +101,7 @@ class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
 
   void _endGame() {
     _timer?.cancel();
+    SoundService().playGameOver();
     setState(() {
       _quizEnded = true;
     });

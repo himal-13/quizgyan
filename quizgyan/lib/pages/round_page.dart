@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:quizgyan/services/audio_services.dart';
 import 'dart:async'; // For Timer
 import 'dart:math'; // For Random
 
@@ -227,6 +228,12 @@ class _RoundsPageState extends State<RoundsPage> {
         _currentRoundQuestions[_currentQuestionIndexInRound];
     bool isCorrect = (selectedAnswer == currentQuestion.answer);
 
+    if (isCorrect) {
+      SoundService().playSuccess(); // Play success sound for correct answer
+    } else {
+      SoundService().playFailed(); // Play failed sound for wrong answer
+    }
+
     // Apply scoring rules based on the current round
     if (_currentRoundIndex == 0) {
       // Basic Round
@@ -301,6 +308,7 @@ class _RoundsPageState extends State<RoundsPage> {
   // Ends the entire game
   void _endGame() {
     _timer?.cancel();
+    SoundService().playGameOver();
     setState(() {
       _quizEnded = true;
     });
