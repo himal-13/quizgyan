@@ -1,167 +1,90 @@
 import 'package:flutter/material.dart';
-import 'package:quizgyan/constants/questions/science_questions.dart';
+import 'package:quizgyan/constants/level_questions.dart';
+import 'package:quizgyan/pages/level_play.dart';
 
-class LevelPage extends StatefulWidget {
-  const LevelPage({super.key});
+class LevelsPage extends StatelessWidget {
+  // Determine the maximum level available from your quizQuestions
+  final int maxLevel = quizQuestions
+      .map((q) => q.gameLevel)
+      .reduce((a, b) => a > b ? a : b);
 
-  @override
-  State<LevelPage> createState() => _LevelPageState();
-}
+  LevelsPage({super.key});
 
-class _LevelPageState extends State<LevelPage> {
-  int currentQuestionIndex = 0;
-  int completedscienceQuestionsIndex = 0;
-  int? selectedOptionIndex;
-  bool? isAnswerCorrect;
-  bool optionClicked = false;
-  int level = 1;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF4B0082), // Deep purple background
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top row with Level and Timer
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    //should have to change this to the level name
-                    "Level $level",
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                  Text(
-                    "${completedscienceQuestionsIndex + 1} / ${scienceQuestions.length}",
-                    style: TextStyle(color: Colors.white, fontSize: 16),
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.shield, color: Colors.green, size: 22),
-                      Icon(Icons.shield, color: Colors.green, size: 22),
-                      Icon(Icons.shield, color: Colors.green, size: 22),
-                    ],
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-
-              // Progress Bar
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: LinearProgressIndicator(
-                  value:
-                      completedscienceQuestionsIndex /
-                      scienceQuestions.length, // 60%
-                  minHeight: 10,
-                  backgroundColor: Colors.black38,
-                  valueColor: AlwaysStoppedAnimation<Color>(Colors.yellow),
-                ),
-              ),
-              SizedBox(height: 30),
-
-              SizedBox(height: 10),
-              Center(
-                child: Text(
-                  scienceQuestions[currentQuestionIndex].questionText,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              SizedBox(height: 40),
-
-              // Options
-              ListView.builder(
-                shrinkWrap: true,
-                physics: NeverScrollableScrollPhysics(),
-                itemCount:
-                    scienceQuestions[currentQuestionIndex].options.length,
-                itemBuilder: (context, index) {
-                  final option =
-                      scienceQuestions[currentQuestionIndex].options[index];
-                  return OptionButton(
-                    bgColor: selectedOptionIndex == index
-                        ? (index ==
-                                  scienceQuestions[currentQuestionIndex]
-                                      .answerIndex
-                              ? Colors.green
-                              : Colors.red) // Change color when selected
-                        : Color(0xFF6A5ACD), // Slate blue color
-                    text: option,
-                    isSelected: false, // You can implement selection logic
-                    onPressed: () {
-                      if (optionClicked &&
-                          completedscienceQuestionsIndex >=
-                              scienceQuestions.length) {
-                        return;
-                      }
-
-                      setState(() {
-                        selectedOptionIndex = index;
-                        optionClicked = true;
-                      });
-
-                      Future.delayed(Duration(milliseconds: 250), () {
-                        setState(() {
-                          completedscienceQuestionsIndex++;
-                          currentQuestionIndex++;
-                          optionClicked = false;
-                          selectedOptionIndex = null;
-                          if ((currentQuestionIndex + 1) % 5 == 0) {
-                            level++;
-                          }
-                        });
-                      });
-                    },
-                  );
-                },
-              ),
-            ],
+      appBar: AppBar(
+        title: Text('Select Level', style: TextStyle(color: Colors.white)),
+        centerTitle: true,
+        backgroundColor: Colors.deepPurple,
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.deepPurple.shade800, Colors.deepPurple.shade400],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
+        ),
+        child: GridView.builder(
+          padding: const EdgeInsets.all(16.0),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: MediaQuery.of(context).size.width > 600
+                ? 4
+                : 2, // Responsive grid
+            crossAxisSpacing: 16.0,
+            mainAxisSpacing: 16.0,
+            childAspectRatio: 1.0,
+          ),
+          itemCount: maxLevel,
+          itemBuilder: (context, index) {
+            final level = index + 1;
+            return LevelCard(level: level);
+          },
         ),
       ),
     );
   }
 }
 
-class OptionButton extends StatelessWidget {
-  final String text;
-  final bool isSelected;
-  final void Function()? onPressed;
-  final Color bgColor; // Slate blue color
+class LevelCard extends StatelessWidget {
+  final int level;
 
-  const OptionButton({
-    super.key,
-    required this.text,
-    this.isSelected = false,
-    this.onPressed,
-    this.bgColor = const Color(0xFF6A5ACD),
-  });
+  const LevelCard({super.key, required this.level});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: EdgeInsets.symmetric(vertical: 6),
-      width: double.infinity,
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-          backgroundColor: bgColor,
-          padding: EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
+    return Card(
+      elevation: 8,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      color: Colors.white.withOpacity(0.9),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => LevelPlay(currentLevel: level),
+            ),
+          );
+        },
+        borderRadius: BorderRadius.circular(15),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.star, size: 48, color: Colors.amber.shade700),
+              SizedBox(height: 10),
+              Text(
+                'Level $level',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.deepPurple,
+                ),
+              ),
+            ],
           ),
         ),
-        onPressed: () {
-          onPressed?.call();
-        },
-        child: Text(text, style: TextStyle(fontSize: 18, color: Colors.white)),
       ),
     );
   }

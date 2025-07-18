@@ -116,9 +116,7 @@ class _ThreeMultiplayerState extends State<ThreeMultiplayer> {
               Text("Winner: ${winner.name} with ${winner.score} points!"),
               const SizedBox(height: 10),
               // Display all player scores
-              ...players
-                  .map((p) => Text("${p.name}: ${p.score} points"))
-                  .toList(),
+              ...players.map((p) => Text("${p.name}: ${p.score} points")),
             ],
           ),
           actions: <Widget>[
@@ -262,7 +260,7 @@ class _ThreeMultiplayerState extends State<ThreeMultiplayer> {
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               )
             else

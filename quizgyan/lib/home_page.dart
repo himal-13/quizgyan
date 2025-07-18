@@ -77,8 +77,8 @@ class _HomePageState extends State<HomePage> {
                 Expanded(
                   child: GridView.count(
                     crossAxisCount: 2,
-                    crossAxisSpacing: 20.0,
-                    mainAxisSpacing: 20.0,
+                    crossAxisSpacing: 40.0,
+                    mainAxisSpacing: 40.0,
                     scrollDirection:
                         Axis.vertical, // To prevent scrolling inside the column
                     children: <Widget>[
@@ -125,7 +125,7 @@ class _HomePageState extends State<HomePage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const LevelPage(),
+                              builder: (context) => LevelsPage(),
                             ),
                           );
                         },
@@ -133,7 +133,7 @@ class _HomePageState extends State<HomePage> {
                       _buildActionButton(
                         context,
                         icon: Icons.people, // People icon for Multiplayer
-                        label: 'MULTIPLAYER',
+                        label: '2PLAYER',
                         color: const Color(0xFF5F258B), // Purple color
                         onPressed: () {
                           Navigator.push(
@@ -230,7 +230,7 @@ class _HomePageState extends State<HomePage> {
             Icon(
               icon,
               color: Colors.white,
-              size: 50.0, // Icon size
+              size: 40.0, // Icon size
             ),
             const SizedBox(height: 10.0),
             Text(

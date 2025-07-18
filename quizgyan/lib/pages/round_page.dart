@@ -464,32 +464,6 @@ class _RoundsPageState extends State<RoundsPage> {
               const SizedBox(height: 30),
 
               // Quiz Title
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                decoration: BoxDecoration(
-                  color: Colors.pink.shade600,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color.fromARGB(63, 0, 0, 0),
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset: const Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: const Text(
-                  'QUIZ',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
 
               // Question Card
               Container(
@@ -508,7 +482,7 @@ class _RoundsPageState extends State<RoundsPage> {
                   ],
                 ),
                 child: Text(
-                  currentQuestion.question,
+                  "${currentQuestion.question}(${currentQuestion.questionEnglish})",
                   textAlign: TextAlign.center,
                   style: const TextStyle(
                     color: Colors.white,

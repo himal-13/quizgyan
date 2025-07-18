@@ -271,34 +271,6 @@ class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
               ),
               SizedBox(height: 30),
 
-              // Quiz Title
-              Container(
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(vertical: 20),
-                decoration: BoxDecoration(
-                  color: Colors.pink.shade600,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color.fromARGB(90, 0, 0, 0),
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset: Offset(0, 5),
-                    ),
-                  ],
-                ),
-                child: Text(
-                  'QUIZ',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-
               // Question Card
               Container(
                 width: double.infinity,
@@ -316,7 +288,7 @@ class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
                   ],
                 ),
                 child: Text(
-                  currentQuestion.question,
+                  "${currentQuestion.question}(${currentQuestion.questionEnglish})",
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Colors.white,
