@@ -4,7 +4,7 @@ import 'package:quizgyan/pages/level_play.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
 
 class LevelsPage extends StatefulWidget {
-  LevelsPage({super.key});
+  const LevelsPage({super.key});
 
   @override
   State<LevelsPage> createState() => _LevelsPageState();

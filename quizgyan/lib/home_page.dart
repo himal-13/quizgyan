@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:quizgyan/pages/about_page.dart';
 import 'package:quizgyan/pages/level_page.dart';
 import 'package:quizgyan/pages/multiplayer_page.dart';
 import 'package:quizgyan/pages/quick_play.dart';
 import 'package:quizgyan/pages/round_page.dart';
 import 'package:quizgyan/pages/setting_page.dart';
 import 'package:store_redirect/store_redirect.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -161,7 +161,7 @@ class _HomePageState extends State<HomePage> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => const SettingPage(),
+                            builder: (context) => const SettingsPage(),
                           ),
                         );
                       },
@@ -181,14 +181,16 @@ class _HomePageState extends State<HomePage> {
                       context,
                       icon: Icons.apps, // More Apps icon
                       label: 'MORE APPS',
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                const AboutPage(), // Mapped to AboutPage as a placeholder
-                          ),
-                        );
+                      onPressed: () async {
+                        const String playStoreUrl =
+                            "https://play.google.com/store/apps/dev?id=4891474117458654732"; // Placeholder example
+
+                        final Uri url = Uri.parse(playStoreUrl);
+
+                        if (!await launchUrl(
+                          url,
+                          mode: LaunchMode.externalApplication,
+                        )) {}
                       },
                     ),
                   ],
