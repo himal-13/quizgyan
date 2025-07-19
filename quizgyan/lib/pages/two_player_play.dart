@@ -6,8 +6,6 @@ import 'package:quizgyan/components/multiplayer_result.dart';
 import 'package:quizgyan/constants/questions.dart';
 import 'package:quizgyan/services/audio_services.dart';
 
-List<Question> selectedQuestions = List.from(nepaliQuizQuestions)..shuffle();
-
 class TwoPlayerPlay extends StatefulWidget {
   final String player1Name;
   final String player2Name;
@@ -24,6 +22,8 @@ class TwoPlayerPlay extends StatefulWidget {
 }
 
 class _TwoPlayerPlayState extends State<TwoPlayerPlay> {
+  List<Question> selectedQuestions = List.from(nepaliQuizQuestions)..shuffle();
+
   bool player1Turn = true;
   bool player1ChooseQuestion = true;
   int player1Score = 0;

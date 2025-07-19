@@ -35,7 +35,7 @@ class _MultiplayerPageState extends State<MultiplayerPage> {
           child: Column(
             children: [
               const Text(
-                "Multiplayer Mode",
+                "2 Player Mode",
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
