@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:quizgyan/services/audio_services.dart';
 import 'dart:async'; // For Timer
 import 'dart:math';
+import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
+import 'dart:convert'; // For JSON encoding/decoding
 
 import '../constants/questions.dart'; // For Random
 
@@ -17,18 +19,46 @@ class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
   List<Question> _allQuestions = [];
   int _currentQuestionIndex = 0;
   int _score = 0;
-  int _timeLeft =
-      60; // Initial total game time in seconds (CHANGED to 60 seconds)
+  int _timeLeft = 60; // Initial total game time in seconds
   Timer? _timer;
   bool _quizEnded = false;
   String? _selectedOption;
   bool _answerChecked = false;
-  int _questionsAnswered = 0; // New: To track how many questions were attempted
+  int _questionsAnswered = 0; // Tracks total questions attempted
+  int _correctAnswersCount = 0; // New: Tracks number of correct answers
+  bool _showStartMenu = true; // New: To control visibility of start menu
+  List<int> _highScores = []; // New: To store high scores
 
   @override
   void initState() {
     super.initState();
-    _initializeQuiz();
+    _loadHighScores(); // Load high scores when the page initializes
+  }
+
+  // Function to load high scores from shared preferences
+  Future<void> _loadHighScores() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? highScoresString = prefs.getString('quickPlayHighScores');
+    if (highScoresString != null) {
+      setState(() {
+        _highScores = (jsonDecode(highScoresString) as List)
+            .map((e) => e as int)
+            .toList();
+        _highScores.sort((a, b) => b.compareTo(a)); // Sort in descending order
+      });
+    }
+  }
+
+  // Function to save a new high score
+  Future<void> _saveHighScore(int newScore) async {
+    final prefs = await SharedPreferences.getInstance();
+    _highScores.add(newScore);
+    _highScores.sort((a, b) => b.compareTo(a)); // Sort in descending order
+    if (_highScores.length > 3) {
+      _highScores = _highScores.sublist(0, 3); // Keep only top 3
+    }
+    await prefs.setString('quickPlayHighScores', jsonEncode(_highScores));
+    setState(() {}); // Update UI to reflect new high scores
   }
 
   void _initializeQuiz() {
@@ -36,11 +66,13 @@ class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
     _allQuestions = List<Question>.from(nepaliQuizQuestions)..shuffle(Random());
     _currentQuestionIndex = 0;
     _score = 0;
-    _timeLeft = 60; // Reset to 60 seconds for a new game (CHANGED)
+    _timeLeft = 60; // Reset to 60 seconds for a new game
     _quizEnded = false;
     _selectedOption = null;
     _answerChecked = false;
     _questionsAnswered = 0; // Reset for a new game
+    _correctAnswersCount = 0; // Reset correct answers count
+    _showStartMenu = false; // Hide start menu when quiz starts
     _startTimer();
   }
 
@@ -73,14 +105,13 @@ class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
     if (selectedAnswer == currentQuestion.answer) {
       SoundService().playSuccess();
       setState(() {
-        _score++;
-        _timeLeft += 3; // Add 3 seconds for a correct answer
+        _score += 10; // Award 10 points for correct answer
+        _correctAnswersCount++; // Increment correct answers count
       });
     } else {
       SoundService().playFailed();
       setState(() {
-        _timeLeft -= 2; // Subtract 2 seconds for a wrong answer
-        if (_timeLeft < 0) _timeLeft = 0; // Ensure time doesn't go negative
+        _score -= 2; // Deduct 2 points for wrong answer
       });
     }
 
@@ -105,14 +136,15 @@ class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
     setState(() {
       _quizEnded = true;
     });
-    // You can navigate to a results screen or show a dialog here
+    _saveHighScore(_score); // Save the score
     _showGameOverDialog();
   }
 
   void _showGameOverDialog() {
     double accuracy = 0.0;
     if (_questionsAnswered > 0) {
-      accuracy = (_score / _questionsAnswered) * 100;
+      // Calculate accuracy based on _correctAnswersCount
+      accuracy = (_correctAnswersCount / _questionsAnswered) * 100;
     }
 
     showDialog(
@@ -133,18 +165,26 @@ class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'तपाईंको स्कोर: $_score / $_questionsAnswered', // Show score out of answered questions
+                'तपाईंको स्कोर: $_score', // Display total score
                 style: TextStyle(color: Colors.white, fontSize: 20),
               ),
               SizedBox(height: 10),
               Text(
-                'सटीकता: ${accuracy.toStringAsFixed(2)}%', // Display accuracy
+                'Correct Answers: $_correctAnswersCount / $_questionsAnswered', // Show correct answers vs total attempted
+                style: TextStyle(color: Colors.white, fontSize: 20),
+              ),
+              SizedBox(height: 10),
+              Text(
+                'Accuracy: ${accuracy.toStringAsFixed(2)}%', // Display accuracy
                 style: TextStyle(color: Colors.white, fontSize: 20),
               ),
               SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop(); // Close the dialog
+                  setState(() {
+                    _showStartMenu = true; // Show start menu for next game
+                  });
                   _initializeQuiz(); // Restart the quiz
                 },
                 style: ElevatedButton.styleFrom(
@@ -194,6 +234,87 @@ class _QuickPlayQuizPageState extends State<QuickPlayQuizPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_showStartMenu) {
+      return Scaffold(
+        backgroundColor: Colors.blueGrey.shade900,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Quick Play Quiz',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'Test your knowledge with a timed quiz! Answer as many questions as you can in 60 seconds.',
+                  style: TextStyle(fontSize: 18, color: Colors.white70),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 40),
+                ElevatedButton(
+                  onPressed: _initializeQuiz,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.shade700,
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                  child: Text(
+                    'Start Quiz',
+                    style: TextStyle(fontSize: 20, color: Colors.white),
+                  ),
+                ),
+                SizedBox(height: 40),
+                Text(
+                  'High Scores (Top 3)',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.amber,
+                  ),
+                ),
+                SizedBox(height: 10),
+                _highScores.isEmpty
+                    ? Text(
+                        'No high scores yet!',
+                        style: TextStyle(fontSize: 16, color: Colors.white54),
+                      )
+                    : Column(
+                        children: _highScores
+                            .asMap()
+                            .entries
+                            .map(
+                              (entry) => Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4.0,
+                                ),
+                                child: Text(
+                                  '${entry.key + 1}. ${entry.value} points',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     if (_allQuestions.isEmpty) {
       return Scaffold(
         backgroundColor: Colors.blueGrey.shade900,

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:quizgyan/services/audio_services.dart';
 import 'dart:async'; // For Timer
 import 'dart:math'; // For Random
+import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
+import 'dart:convert'; // For JSON encoding/decoding
 
 import '../constants/questions.dart'; // Assuming this file contains your Question class and nepaliQuizQuestions list
 
@@ -36,6 +38,8 @@ class _RoundsPageState extends State<RoundsPage> {
   bool _answerChecked = false;
   // Flag specific to the Buzzer Round: true when the buzzer is clicked and options are revealed
   bool _buzzerClicked = false;
+  bool _showStartMenu = true; // New: To control visibility of start menu
+  List<int> _highScores = []; // New: To store high scores
 
   // Names of the rounds for display
   final List<String> _roundNames = [
@@ -54,10 +58,33 @@ class _RoundsPageState extends State<RoundsPage> {
   @override
   void initState() {
     super.initState();
-    // Game starts automatically when the page is initialized
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _initializeGame();
-    });
+    _loadHighScores(); // Load high scores when the page initializes
+  }
+
+  // Function to load high scores from shared preferences
+  Future<void> _loadHighScores() async {
+    final prefs = await SharedPreferences.getInstance();
+    final String? highScoresString = prefs.getString('roundPlayHighScores');
+    if (highScoresString != null) {
+      setState(() {
+        _highScores = (jsonDecode(highScoresString) as List)
+            .map((e) => e as int)
+            .toList();
+        _highScores.sort((a, b) => b.compareTo(a)); // Sort in descending order
+      });
+    }
+  }
+
+  // Function to save a new high score
+  Future<void> _saveHighScore(int newScore) async {
+    final prefs = await SharedPreferences.getInstance();
+    _highScores.add(newScore);
+    _highScores.sort((a, b) => b.compareTo(a)); // Sort in descending order
+    if (_highScores.length > 3) {
+      _highScores = _highScores.sublist(0, 3); // Keep only top 3
+    }
+    await prefs.setString('roundPlayHighScores', jsonEncode(_highScores));
+    setState(() {}); // Update UI to reflect new high scores
   }
 
   // Initializes the entire game, setting up questions and showing the first round intro
@@ -78,10 +105,10 @@ class _RoundsPageState extends State<RoundsPage> {
     _selectedOption = null;
     _answerChecked = false;
     _buzzerClicked = false;
+    _showStartMenu = false; // Hide start menu when game starts
 
-    // Directly prepare and start the first round without showing an intro dialog
     _prepareRound();
-    _startRoundActual();
+    _showRoundIntroDialog(); // Show intro dialog for the first round
   }
 
   // Prepares the questions and time for a new round, then shows the intro dialog
@@ -175,7 +202,6 @@ class _RoundsPageState extends State<RoundsPage> {
         );
       },
     );
-    _prepareRound(); // Prepare questions and time while dialog is shown
   }
 
   // Starts the actual timer and question display for the current round
@@ -297,6 +323,7 @@ class _RoundsPageState extends State<RoundsPage> {
         setState(() {
           _currentRoundIndex++;
         });
+        _prepareRound(); // Prepare questions for the next round
         _showRoundIntroDialog(); // Show intro for the next round
       } else {
         // All rounds are completed, end the game
@@ -312,6 +339,7 @@ class _RoundsPageState extends State<RoundsPage> {
     setState(() {
       _quizEnded = true;
     });
+    _saveHighScore(_score); // Save the score
     _showGameOverDialog(); // Show game over dialog
   }
 
@@ -342,6 +370,9 @@ class _RoundsPageState extends State<RoundsPage> {
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop(); // Close the dialog
+                  setState(() {
+                    _showStartMenu = true; // Show start menu for next game
+                  });
                   _initializeGame(); // Restart the entire game
                 },
                 style: ElevatedButton.styleFrom(
@@ -359,6 +390,26 @@ class _RoundsPageState extends State<RoundsPage> {
                   style: TextStyle(fontSize: 18, color: Colors.black),
                 ),
               ),
+              SizedBox(height: 10), // Space between buttons
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.of(context).pop(); // Close the dialog
+                  Navigator.of(
+                    context,
+                  ).pop(); // Navigate back to previous screen (e.g., home)
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red, // Quit button color
+                  padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+                child: Text(
+                  'Quit', // English "Quit" button
+                  style: TextStyle(fontSize: 18, color: Colors.white),
+                ),
+              ),
             ],
           ),
         );
@@ -374,6 +425,87 @@ class _RoundsPageState extends State<RoundsPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (_showStartMenu) {
+      return Scaffold(
+        backgroundColor: Colors.blueGrey.shade900,
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Rounds Quiz',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 20),
+                Text(
+                  'Experience a multi-round quiz with different challenges!',
+                  style: TextStyle(fontSize: 18, color: Colors.white70),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 40),
+                ElevatedButton(
+                  onPressed: _initializeGame,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green.shade700,
+                    padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                  ),
+                  child: Text(
+                    'Start Game',
+                    style: TextStyle(fontSize: 20, color: Colors.white),
+                  ),
+                ),
+                SizedBox(height: 40),
+                Text(
+                  'High Scores (Top 3)',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.amber,
+                  ),
+                ),
+                SizedBox(height: 10),
+                _highScores.isEmpty
+                    ? Text(
+                        'No high scores yet!',
+                        style: TextStyle(fontSize: 16, color: Colors.white54),
+                      )
+                    : Column(
+                        children: _highScores
+                            .asMap()
+                            .entries
+                            .map(
+                              (entry) => Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 4.0,
+                                ),
+                                child: Text(
+                                  '${entry.key + 1}. ${entry.value} points',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
     // Show a loading/empty state if questions are not yet loaded or available
     if (_allGameQuestions.isEmpty || _currentRoundQuestions.isEmpty) {
       return Scaffold(
