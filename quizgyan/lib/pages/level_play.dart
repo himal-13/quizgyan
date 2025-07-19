@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:quizgyan/services/audio_services.dart';
 import 'dart:async';
 import 'dart:math';
+import 'package:shared_preferences/shared_preferences.dart'; // Import shared_preferences
 
 import '../constants/level_questions.dart';
 
@@ -91,6 +93,12 @@ class _LevelPlayState extends State<LevelPlay> {
         _score++;
       }
     });
+    if (selectedOption ==
+        _selectedQuestions[_currentQuestionIndex].correctAnswerIndex) {
+      SoundService().playSuccess();
+    } else {
+      SoundService().playFailed();
+    }
 
     // Move to next question after a short delay
     Future.delayed(Duration(seconds: 1), () {
@@ -110,6 +118,15 @@ class _LevelPlayState extends State<LevelPlay> {
     }
   }
 
+  // Function to save the highest completed level
+  Future<void> _saveHighestCompletedLevel(int level) async {
+    final prefs = await SharedPreferences.getInstance();
+    int? highestLevel = prefs.getInt('highestCompletedLevel');
+    if (highestLevel == null || level > highestLevel) {
+      await prefs.setInt('highestCompletedLevel', level);
+    }
+  }
+
   void _endQuiz({bool timeUp = false}) {
     _timer?.cancel();
     setState(() {
@@ -121,12 +138,22 @@ class _LevelPlayState extends State<LevelPlay> {
       }
     });
 
+    // If quiz passed, save the completed level
+    if (_score >= 7) {
+      _saveHighestCompletedLevel(widget.currentLevel);
+    }
+
     // Show results dialog
     _showResultDialog();
   }
 
   void _showResultDialog() {
     bool passed = _score >= 7;
+    if (passed) {
+      SoundService().playLevelComplete();
+    } else {
+      SoundService().playGameOver();
+    }
     String resultStatusText = passed ? 'Level Complete!' : 'Level Failed!';
     Color iconColor = passed ? Colors.green.shade300 : Colors.red.shade300;
     IconData icon = passed ? Icons.check_circle_outline : Icons.cancel_outlined;
