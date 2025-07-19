@@ -1,8 +1,10 @@
+import 'dart:async'; // Import for Timer
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:quizgyan/components/multiplayer_result.dart';
 import 'package:quizgyan/constants/questions.dart';
+import 'package:quizgyan/services/audio_services.dart';
 
 List<Question> selectedQuestions = List.from(nepaliQuizQuestions)..shuffle();
 
@@ -33,6 +35,11 @@ class _TwoPlayerPlayState extends State<TwoPlayerPlay> {
   bool showResult = false;
   List<int> remainingQuestionIndex = [];
 
+  // Timer variables
+  Timer? _timer;
+  int _timeRemaining = 0;
+  final GlobalKey _timerKey = GlobalKey(); // Key for the timer text widget
+
   @override
   void initState() {
     selectedQuestions = selectedQuestions.take(widget.totalQuestions).toList();
@@ -41,6 +48,55 @@ class _TwoPlayerPlayState extends State<TwoPlayerPlay> {
       (index) => index,
     );
     super.initState();
+    // Start timer only if a question is already chosen (not in choose question mode initially)
+    if (!chooseQuestionMode) {
+      _startTimer();
+    }
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Cancel the timer to prevent memory leaks
+    super.dispose();
+  }
+
+  void _startTimer() {
+    _timer?.cancel(); // Cancel any existing timer
+    _timeRemaining = firstAttempt ? 15 : 8;
+    if (!chooseQuestionMode) {
+      // Only start timer if actually in question answering mode
+      _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+        if (_timeRemaining > 0) {
+          setState(() {
+            _timeRemaining--;
+          });
+        } else {
+          _timer?.cancel();
+          // Handle timeout:
+          setState(() {
+            if (firstAttempt) {
+              // If first attempt timed out, give second chance to other player
+              firstAttempt = false;
+              player1Turn = !player1Turn;
+              _startTimer(); // Start timer for the other player
+            } else {
+              // Both players failed or second attempt timed out
+              secondAttempt = true;
+              firstAttempt = true;
+              chooseQuestionMode = true; // Go back to question selection
+              player1ChooseQuestion =
+                  !player1ChooseQuestion; // Alternate question chooser
+              if (remainingQuestionIndex.isEmpty) {
+                showResult = true; // Show result if no questions left
+                SoundService().playGameOver();
+              }
+              player1Turn =
+                  player1ChooseQuestion; // Turn follows the next question chooser
+            }
+          });
+        }
+      });
+    }
   }
 
   @override
@@ -62,9 +118,10 @@ class _TwoPlayerPlayState extends State<TwoPlayerPlay> {
                       rightSegmentText: widget.player1Name,
                       leftSegmentColor: const Color.fromARGB(255, 40, 85, 167),
                       rightSegmentColor: const Color(0xFF6F42C1),
+                      showTimer:
+                          player1Turn, // Show timer for player 1 if it's their turn
                     ),
                   ),
-
                   Expanded(
                     child: Column(
                       children: [
@@ -80,7 +137,6 @@ class _TwoPlayerPlayState extends State<TwoPlayerPlay> {
                             ),
                           ),
                         ),
-
                         Transform.rotate(
                           angle: player1Turn ? pi : 0,
                           child: Container(
@@ -112,7 +168,6 @@ class _TwoPlayerPlayState extends State<TwoPlayerPlay> {
                             ),
                           ),
                         ),
-
                         Expanded(
                           child: SingleChildScrollView(
                             padding: const EdgeInsets.all(20.0),
@@ -127,12 +182,13 @@ class _TwoPlayerPlayState extends State<TwoPlayerPlay> {
                       ],
                     ),
                   ),
-
                   _buildScoreboard(
                     leftSegmentText: "$player2Score",
                     rightSegmentText: widget.player2Name,
                     leftSegmentColor: const Color(0xFF6F42C1),
                     rightSegmentColor: const Color(0xFF28A745),
+                    showTimer:
+                        !player1Turn, // Show timer for player 2 if it's their turn
                   ),
                 ],
               ),
@@ -145,52 +201,86 @@ class _TwoPlayerPlayState extends State<TwoPlayerPlay> {
     required String rightSegmentText,
     required Color leftSegmentColor,
     required Color rightSegmentColor,
+    required bool showTimer, // New parameter for showing timer
   }) {
     return SizedBox(
       height: 60,
-      child: Row(
+      child: Stack(
+        // Changed to Stack for flexible positioning
         children: [
-          Expanded(
-            child: Container(
-              color: leftSegmentColor,
-              alignment: Alignment.center,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    leftSegmentText,
-                    style: const TextStyle(
+          Row(
+            // Existing Row for score and name segments
+            children: [
+              Expanded(
+                child: Container(
+                  color: leftSegmentColor,
+                  alignment: Alignment.center,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        leftSegmentText,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  color: rightSegmentColor,
+                  alignment: Alignment.center,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10.0),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        rightSegmentText,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (showTimer &&
+              !chooseQuestionMode) // Only show timer when playing a question
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10.0,
+                vertical: 15,
+              ),
+              decoration: BoxDecoration(
+                color: _timeRemaining < 6
+                    ? const Color.fromARGB(255, 147, 17, 0)
+                    : const Color.fromARGB(255, 81, 147, 0),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: Row(
+                children: [
+                  Icon(Icons.timer, color: Colors.white),
+                  Text(
+                    '$_timeRemaining',
+                    key: _timerKey, // Assign the key here
+                    style: TextStyle(
                       color: Colors.white,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
+                ],
               ),
             ),
-          ),
-
-          Expanded(
-            child: Container(
-              color: rightSegmentColor,
-              alignment: Alignment.center,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10.0),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    rightSegmentText,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -225,8 +315,8 @@ class _TwoPlayerPlayState extends State<TwoPlayerPlay> {
                               ),
                               const SizedBox(height: 20),
                               Wrap(
-                                spacing: 15.0,
-                                runSpacing: 15.0,
+                                spacing: 10.0, // Reduced spacing
+                                runSpacing: 10.0, // Reduced spacing
                                 alignment: WrapAlignment.center,
                                 children: remainingQuestionIndex.map((index) {
                                   return ElevatedButton(
@@ -235,24 +325,33 @@ class _TwoPlayerPlayState extends State<TwoPlayerPlay> {
                                         currentQuestionIndex = index;
                                         remainingQuestionIndex.remove(index);
                                         chooseQuestionMode = false;
+                                        _startTimer(); // Start timer when question is chosen
                                       });
                                     },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: const Color(0xFF5C2D7B),
                                       shape: RoundedRectangleBorder(
                                         borderRadius: BorderRadius.circular(
-                                          10.0,
+                                          8.0, // Slightly smaller border radius
                                         ),
                                       ),
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 20,
-                                        vertical: 15,
+                                        horizontal:
+                                            15, // Reduced horizontal padding
+                                        vertical:
+                                            10, // Reduced vertical padding
                                       ),
+                                      minimumSize: const Size(
+                                        50,
+                                        40,
+                                      ), // Set a minimum size for the button
                                     ),
                                     child: Text(
-                                      index.toString(),
+                                      (index + 1)
+                                          .toString(), // Display 1-based index
                                       style: const TextStyle(
-                                        fontSize: 18,
+                                        fontSize:
+                                            16, // Slightly smaller font size
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white,
                                       ),
@@ -281,7 +380,7 @@ class _TwoPlayerPlayState extends State<TwoPlayerPlay> {
                     secondAttempt
                         ? Row(
                             children: [
-                              Icon(Icons.forward, size: 23),
+                              const Icon(Icons.forward, size: 23),
                               const SizedBox(width: 10),
                               Text(
                                 selectedQuestions[currentQuestionIndex].answer,
@@ -300,9 +399,11 @@ class _TwoPlayerPlayState extends State<TwoPlayerPlay> {
                                 chooseQuestionMode = true;
                                 firstAttempt = true;
                                 secondAttempt = false;
+                                _timer
+                                    ?.cancel(); // Cancel timer when choosing another question
                               });
                             },
-                            child: Text("choose another question"),
+                            child: const Text("choose another question"),
                           )
                         : const SizedBox(),
                     isMyTurn && !secondAttempt
@@ -310,8 +411,10 @@ class _TwoPlayerPlayState extends State<TwoPlayerPlay> {
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
                                   crossAxisCount: 2,
-                                  mainAxisSpacing: 10.0,
-                                  crossAxisSpacing: 10.0,
+                                  mainAxisSpacing: 8.0, // Reduced spacing
+                                  crossAxisSpacing: 8.0, // Reduced spacing
+                                  childAspectRatio:
+                                      3.0, // Adjust aspect ratio for smaller buttons
                                 ),
                             itemCount: selectedQuestions[currentQuestionIndex]
                                 .options
@@ -321,7 +424,7 @@ class _TwoPlayerPlayState extends State<TwoPlayerPlay> {
                             itemBuilder: (context, index) {
                               return ElevatedButton(
                                 onPressed: () {
-                                  //player should get 5 points for first attempt and 3 points for second attempt
+                                  _timer?.cancel(); // Cancel timer on answer
                                   bool isCorrect =
                                       selectedQuestions[currentQuestionIndex]
                                           .options[index] ==
@@ -329,6 +432,7 @@ class _TwoPlayerPlayState extends State<TwoPlayerPlay> {
                                           .answer;
 
                                   if (isCorrect) {
+                                    SoundService().playSuccess();
                                     setState(() {
                                       if (firstAttempt) {
                                         // Full points for first try
@@ -365,11 +469,13 @@ class _TwoPlayerPlayState extends State<TwoPlayerPlay> {
                                       player1Turn = player1ChooseQuestion;
                                     });
                                   } else {
+                                    SoundService().playFailed();
                                     setState(() {
                                       if (firstAttempt) {
                                         // If first attempt is wrong, give second chance to other player
                                         firstAttempt = false;
                                         player1Turn = !player1Turn;
+                                        _startTimer(); // Start timer for the other player
                                       } else {
                                         // Both players failed, move to next question chooser
                                         secondAttempt = true;
@@ -391,18 +497,23 @@ class _TwoPlayerPlayState extends State<TwoPlayerPlay> {
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: const Color(0xFF5C2D7B),
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
+                                    borderRadius: BorderRadius.circular(
+                                      8.0,
+                                    ), // Smaller border radius
                                   ),
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 15,
+                                    horizontal:
+                                        15, // Reduced horizontal padding
+                                    vertical: 10, // Reduced vertical padding
                                   ),
                                 ),
                                 child: Text(
                                   selectedQuestions[currentQuestionIndex]
                                       .options[index],
+                                  textAlign:
+                                      TextAlign.center, // Center the text
                                   style: const TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 16, // Smaller font size
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),

@@ -58,6 +58,12 @@ class SoundService {
     } catch (e) {}
   }
 
+  // Future<void> playClockTicking() async {
+  //   try {
+  //     await _audioPlayer.play(AssetSource('audio/clock.mp3'));
+  //   } catch (e) {}
+  // }
+
   /// Disposes of the audio player resources.
   /// It's crucial to call this method when the SoundService is no longer needed
   /// (e.g., when the app closes or the audio service is no longer required)
